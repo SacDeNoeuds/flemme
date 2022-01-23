@@ -19,7 +19,7 @@
 - [x] Add InferValue `(...args) => BaseDescriptor<infer V>`
 - [x] Add `lazyUntil` in internals
 - [x] Remove form `submitState`, keep only `getErrors()`
-- [ ] Add injected data `valdidateOn: EventName[]`
+- [x] Add injected data `valdidateOn: EventName[]`
 - [ ] How to handle async validation ?
 - [ ] Publish package
 - [ ] Add basic documentation

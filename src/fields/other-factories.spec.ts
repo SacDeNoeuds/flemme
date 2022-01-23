@@ -11,7 +11,7 @@ overrideErrors({
 })
 
 describe('other factories', () => {
-  const injected: InjectedData = { path: ['someField'] }
+  const injected: InjectedData = { validateOn: [], path: ['someField'] }
   const cityField = primitive<string>()
   const objectField = object({ city: cityField })
   const arrayField = array(cityField)
@@ -25,7 +25,7 @@ describe('other factories', () => {
     const makeField = object({ cities: array(cityField) })
     let field: InferField<string>
     describe.each([null, undefined])('with %s', (emptyValue) => {
-      beforeEach(() => (field = makeField.create({ cities: [emptyValue as any] }, { path: [] }).fields.cities.fields[0] as InferField<string>))
+      beforeEach(() => (field = makeField.create({ cities: [emptyValue as any] }, { validateOn: [], path: [] }).fields.cities.fields[0] as InferField<string>))
       it.each([emptyValue])('should have initial value %s', () => expect(field.initial).toBe(emptyValue))
       it.each([emptyValue])('should have value %s', () => expect(field.value).toBe(emptyValue))
       it.each([errorsLength])('should have %s errors', () => expect(field.errors).toHaveLength(errorsLength))
@@ -144,7 +144,7 @@ describe.each([
   ['boolean', boolean, [true, false], ['str', 0, 1, 12, new Date(), {}, []]],
 ])('built-in field %s', (_label, factory, validValues, invalidValues) => {
   const descriptor = factory() as unknown as BaseDescriptor<any>
-  const makeField = (init: any) => descriptor.create(init, { path: [] }) as PrimitiveField<any>
+  const makeField = (init: any) => descriptor.create(init, { validateOn: [], path: [] }) as PrimitiveField<any>
 
   it.each(validValues as any[])('should accept value %s', (validValue) => {
     expect(makeField(validValue)).toMatchObject({
@@ -167,7 +167,7 @@ describe.each([
   })
 
   it('should override error', () => {
-    const field = string().create(12 as any, { path: [] })
+    const field = string().create(12 as any, { validateOn: [], path: [] })
     expect(field.errors[0]).toEqual({ message: 'Expected a string' })
   })
 })

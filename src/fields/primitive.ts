@@ -20,6 +20,7 @@ const makePrimitiveField = <Value extends Primitive | undefined | null>(
   injected: InjectedData,
   isRequired = true,
 ): PrimitiveField<Value> => {
+  const validateOn = new Set(injected.validateOn)
   const validate = composeValidate(isRequired ? mustBeNotNil() : undefined, ...validators)
   let errors: ValidationError[] = []
   let value: Value | undefined | null = initial
@@ -101,6 +102,7 @@ const makePrimitiveField = <Value extends Primitive | undefined | null>(
 
   function setup() {
     field.reset(initial as Value)
+    validateOn.forEach((eventName) => field.on(eventName, () => field.validate()))
   }
 }
 

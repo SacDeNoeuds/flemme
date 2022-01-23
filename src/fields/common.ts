@@ -95,6 +95,7 @@ export type BaseField<Value> = {
 
 export type InjectedData = {
   path: Array<string | number>
+  validateOn: Exclude<BaseEventName, 'reset'>[]
 }
 export type FieldFactory<Value> = (initial: Value, injected: InjectedData) => InferField<Value>
 

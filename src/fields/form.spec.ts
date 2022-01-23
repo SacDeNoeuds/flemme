@@ -15,6 +15,7 @@ describe('form', () => {
   let cityForm!: Form<CityObj>
   const makeCityForm = form<CityObj>({
     schema: object({ cities: array(cityFieldFactory) }),
+    validateOn: ['blur'],
     onInit,
   })
   beforeEach(() => (cityForm = makeCityForm({ cities: ['Amsterdam'] })))
@@ -45,9 +46,13 @@ describe('form', () => {
       it('should reflect "focus" listener', () => expect(focusListener).toHaveBeenCalled())
 
       describe('blur', () => {
-        beforeEach(() => cityField.blur())
+        beforeEach(() => {
+          jest.resetAllMocks()
+          cityField.blur()
+        })
         it('should reflect visited value', () => expect(field.visited).toBe(true))
         it('should reflect "blur" listener', () => expect(blurListener).toHaveBeenCalled())
+        it('should validate inner field', () => expect(forbidTokyoStub).toHaveBeenCalledTimes(1))
       })
     })
 

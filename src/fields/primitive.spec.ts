@@ -3,7 +3,7 @@ import { primitive } from './primitive'
 import { forbidString } from './spec-helpers'
 
 describe('primitive field', () => {
-  const injected: InjectedData = { path: ['city'] }
+  const injected: InjectedData = { validateOn: ['blur'], path: ['city'] }
   const forbidTokyo = forbidString('Tokyo')
   const validate = jest.fn(() => [])
   const field = (value: string) => primitive(forbidTokyo, validate).create(value, injected)
@@ -73,10 +73,14 @@ describe('primitive field', () => {
       it('should trigger "focus" listener', () => expect(focusListener).toHaveBeenCalledWith(cityField))
 
       describe('blur', () => {
-        beforeEach(() => cityField.blur())
+        beforeEach(() => {
+          jest.resetAllMocks()
+          cityField.blur()
+        })
         it('should not be active', () => expect(cityField.active).toBe(false))
         it('should remain visited', () => expect(cityField.visited).toBe(true))
         it('should trigger "blur" listener', () => expect(blurListener).toHaveBeenCalledWith(cityField))
+        it('should validate field', () => expect(validate).toHaveBeenCalledTimes(1))
       })
     })
 

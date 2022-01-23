@@ -5,7 +5,7 @@ import { primitive } from './primitive'
 import { forbidString } from './spec-helpers'
 
 describe('array field', () => {
-  const injected: InjectedData = { path: ['cities'] }
+  const injected: InjectedData = { validateOn: ['blur'], path: ['cities'] }
   const forbidTokyoStub = jest.fn(() => [])
   const forbidTokyo = [forbidString('Tokyo'), forbidTokyoStub]
   const forbidParis = forbidString('Paris')
@@ -93,10 +93,15 @@ describe('array field', () => {
       it('should reflect "focus" listener', () => expect(focusListener).toHaveBeenCalledWith(field))
 
       describe('inner field blur', () => {
-        beforeEach(() => cityField.blur())
+        beforeEach(() => {
+          jest.resetAllMocks()
+          cityField.blur()
+        })
         it('should reflect visited value', () => expect(field.visited).toBe(true))
         it('should reflect active value', () => expect(field.active).toBe(false))
         it('should reflect "blur" listener', () => expect(blurListener).toHaveBeenCalledWith(field))
+        it('should have validated inner field', () => expect(forbidTokyoStub).toHaveBeenCalledTimes(1))
+        it('should have validated array field', () => expect(forbidInnerParisStub).toHaveBeenCalledTimes(1))
       })
     })
 

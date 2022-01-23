@@ -29,6 +29,7 @@ const makeObjectField = <Value extends Obj | undefined | null>(
   injected: InjectedData,
   onFieldsCreated?: (field: ObjectField<Value>) => void,
 ): ObjectField<Value> => {
+  const validateOn = new Set(injected.validateOn) // removes duplicates
   const validate = composeValidate(...validators)
   const field = {} as ObjectField<Value> // create reference of field, populate it later
   const internals = makeInternals(field)
@@ -43,7 +44,7 @@ const makeObjectField = <Value extends Obj | undefined | null>(
     const entries = Object.entries(field.fields).map(([key, f]) => [key, f.value]) as [keyof Value, Value[]][]
     return Object.fromEntries(entries) as Exclude<Value, undefined | null>
   })
-  const isValid = internals.lazyUntil(['change', 'reset'], () => field.errors.length === 0 && !some((field) => !field.valid))
+  const isValid = internals.lazyUntil([...validateOn, 'reset'], () => field.errors.length === 0 && !some((field) => !field.valid))
   const isDirty = internals.lazyUntil(['change', 'reset'], () => {
     const value = field.value
     if (isNil(initial) || isNil(value)) return value !== initial
@@ -136,6 +137,11 @@ const makeObjectField = <Value extends Obj | undefined | null>(
     setFields(initial)
     // Set listeners
     if (field.fields) forwardFieldEvents(field.fields as any)
+    validateOn.forEach((eventName) => {
+      field.on(eventName, () => {
+        errors = validate(field.value)
+      })
+    })
     // initialize
     field.reset(initial)
   }
@@ -155,7 +161,7 @@ const makeObjectField = <Value extends Obj | undefined | null>(
   function createFields(value: Value | undefined | null) {
     if (!value) return value && (undefined as Extract<Value, undefined | null>)
     const entries = (Object.entries(factories) as Array<[string, Descriptor<any>]>).map(([key, descriptor]) => {
-      return [key, descriptor.create(value[String(key)], { path: [...injected.path, key] })]
+      return [key, descriptor.create(value[String(key)], { ...injected, path: [...injected.path, key] })]
     })
     const created = Object.fromEntries(entries) as { [Key in keyof Value]: InferField<Value[Key]> }
     const sealed = Object.seal(created)

@@ -3,7 +3,7 @@ import { InjectedData, Validate } from './common'
 import { forbidString } from './spec-helpers'
 
 describe('composite fields', () => {
-  const injected: InjectedData = { path: ['form'] }
+  const injected: InjectedData = { validateOn: [], path: ['form'] }
   const forbidTokyoStub = jest.fn(() => [])
   const forbidTokyo = [forbidString('Tokyo'), forbidTokyoStub]
   const forbidParis = forbidString('Paris')

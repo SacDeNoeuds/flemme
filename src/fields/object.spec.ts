@@ -5,9 +5,9 @@ import { primitive } from './primitive'
 import { forbidString } from './spec-helpers'
 
 describe('object field', () => {
-  const injected: InjectedData = { path: ['form'] }
+  const injected: InjectedData = { validateOn: ['blur'], path: ['form'] }
   const forbidTokyoStub = jest.fn(() => [])
-  const forbidTokyo = [forbidString('Tokyo'), forbidTokyoStub]
+  const forbidTokyo = [forbidTokyoStub, forbidString('Tokyo')]
   const forbidParis = forbidString('Paris')
   const cityFieldFactory = primitive(...forbidTokyo)
 
@@ -18,7 +18,7 @@ describe('object field', () => {
 
   const forbidInnerParisStub = jest.fn(() => [])
   type CityObj = { city: string }
-  const forbidInnerParis: Validate<CityObj>[] = [(obj) => forbidParis(obj?.city), forbidInnerParisStub]
+  const forbidInnerParis: Validate<CityObj>[] = [forbidInnerParisStub, (obj) => forbidParis(obj?.city)]
   const onInit = jest.fn()
   const makeField = (init: CityObj) => object({ city: cityFieldFactory }, { validators: forbidInnerParis, onInit }).create(init, injected)
 
@@ -97,9 +97,14 @@ describe('object field', () => {
       it('should reflect "focus" listener', () => expect(focusListener).toHaveBeenCalledWith(field))
 
       describe('blur', () => {
-        beforeEach(() => cityField.blur())
+        beforeEach(() => {
+          jest.resetAllMocks()
+          cityField.blur()
+        })
         it('should reflect visited value', () => expect(field.visited).toBe(true))
         it('should reflect "blur" listener', () => expect(blurListener).toHaveBeenCalledWith(field))
+        it('should validate inner field', () => expect(forbidTokyoStub).toHaveBeenCalledTimes(1))
+        it('should validate object field', () => expect(forbidInnerParisStub).toHaveBeenCalledTimes(1))
       })
     })
 
@@ -196,7 +201,7 @@ describe('object field', () => {
 })
 
 describe('merge', () => {
-  const injected: InjectedData = { path: ['form'] }
+  const injected: InjectedData = { validateOn: [], path: ['form'] }
   const schema = () => merge(object({ city: primitive<string>() }), object({ country: primitive<string>() }))
   type Value = InferValue<ReturnType<typeof schema>>
   const initial: Value = { city: 'Tokyo', country: 'Japan' }
@@ -221,7 +226,6 @@ describe('merge', () => {
 
     describe('unlisten', () => {
       beforeEach(() => {
-        jest.clearAllMocks()
         jest.resetAllMocks()
         unlisten()
         field.change({ city: 'Rome', country: 'Italy' })

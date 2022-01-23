@@ -34,6 +34,7 @@ const makeArrayField = <Value extends any[] | undefined | null>(
   injected: InjectedData,
 ): ArrayField<Value> => {
   type ItemValue = NonNullable<Value>[number]
+  const validateOn = new Set(injected.validateOn) // removes duplicates
   const validate = composeValidate(...validators)
 
   const field = {} as ArrayField<Value>
@@ -45,7 +46,7 @@ const makeArrayField = <Value extends any[] | undefined | null>(
   let touched = false
 
   const getValue = internals.lazyUntil(['change', 'reset'], () => (field.fields ? field.fields.map((f) => f.value) : field.fields) as Value)
-  const isValid = internals.lazyUntil(['change', 'reset'], () => field.errors.length === 0 && (field.fields ?? []).every((field) => field.valid))
+  const isValid = internals.lazyUntil([...validateOn, 'reset'], () => field.errors.length === 0 && (field.fields ?? []).every((field) => field.valid))
   const isDirty = internals.lazyUntil(['change', 'reset'], () => isSelfDirty() || (field.fields?.some((field) => field.dirty) ?? false))
   const isTouched = internals.lazyUntil(['change', 'reset'], () => touched || (field.fields?.some((field) => field.touched) ?? false))
   const isVisited = internals.lazyUntil(['focus'], () => field.fields?.some((field) => field.visited) ?? false)
@@ -147,11 +148,16 @@ const makeArrayField = <Value extends any[] | undefined | null>(
   return Object.seal(field)
 
   function setup() {
+    validateOn.forEach((eventName) => {
+      field.on(eventName, () => {
+        errors = validate(field.value)
+      })
+    })
     field.reset(initial)
   }
 
   function createItemField(itemValue: ItemValue | undefined, index: number): InferField<ItemValue> {
-    const itemField = item.create(itemValue as ItemValue, { path: [...injected.path, index] })
+    const itemField = item.create(itemValue as ItemValue, { ...injected, path: [...injected.path, index] })
     baseEventNames.forEach((eventName) => itemField.on(eventName, () => internals.notify(eventName)))
     return itemField as any
   }
