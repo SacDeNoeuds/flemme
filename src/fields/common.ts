@@ -59,6 +59,8 @@ export type Field<T> =
 /* prettier-ignore */
 export type InferValue<T> = T extends (...args: any) => Form<infer Value>
   ? Value
+  : T extends (...args: any[]) => BaseDescriptor<infer Result>
+  ? Result
   : T extends BaseDescriptor<infer Result>
   ? Result
   : never

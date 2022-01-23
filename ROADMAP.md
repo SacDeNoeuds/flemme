@@ -16,6 +16,11 @@
 - [x] Test build by importing lib from elsewhere
 - [x] Enforce typings
 - [x] Re-commit lib as sacdenoeuds
+- [x] Add InferValue `(...args) => BaseDescriptor<infer V>`
+- [ ] Add `lazyUntil` in internals
+- [ ] Add injected data `valdidateOn: EventName[]`
+- [ ] Remove form `submitState`, keep only `getErrors()`
+- [ ] How to handle async validation ?
 - [ ] Publish package
 - [ ] Add basic documentation
 - [ ] Add export map + react bindings
