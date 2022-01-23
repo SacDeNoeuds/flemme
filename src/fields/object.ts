@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { lazy } from '../lib/lazy'
 import { isNil } from '../lib/validation'
 import {
   assign,
@@ -39,36 +38,26 @@ const makeObjectField = <Value extends Obj | undefined | null>(
   let touched = false
   let fields: { [Key in keyof Value]: InferField<Value[Key]> } | undefined | null
 
-  const untilChangeOrReset = {
-    getValue: lazy(() => {
-      if (!field.fields) return field.fields as Extract<Value, undefined | null>
-      const entries = Object.entries(field.fields).map(([key, f]) => [key, f.value]) as [keyof Value, Value[]][]
-      return Object.fromEntries(entries) as Exclude<Value, undefined | null>
-    }),
-    isValid: lazy(() => field.errors.length === 0 && !some((field) => !field.valid)),
-    isDirty: lazy(() => {
-      const value = field.value
-      if (isNil(initial) || isNil(value)) return value !== initial
-      else return some((field) => field.dirty)
-    }),
-    isTouched: lazy(() => touched || some((field) => field.touched)),
-  }
-  const untilFocusOrBlur = {
-    isVisited: lazy(() => some((field) => field.visited)),
-    isActive: lazy(() => some((field) => field.active)),
-  }
-  const flushOnChange = () => Object.values(untilChangeOrReset).forEach((value) => value.flush())
-  internals.on('change', flushOnChange)
-  internals.on('reset', flushOnChange)
-  const flushOnFocusBlur = () => Object.values(untilFocusOrBlur).forEach((value) => value.flush())
-  internals.on('focus', flushOnFocusBlur)
-  internals.on('blur', flushOnFocusBlur)
+  const getValue = internals.lazyUntil(['change', 'reset'], () => {
+    if (!field.fields) return field.fields as Extract<Value, undefined | null>
+    const entries = Object.entries(field.fields).map(([key, f]) => [key, f.value]) as [keyof Value, Value[]][]
+    return Object.fromEntries(entries) as Exclude<Value, undefined | null>
+  })
+  const isValid = internals.lazyUntil(['change', 'reset'], () => field.errors.length === 0 && !some((field) => !field.valid))
+  const isDirty = internals.lazyUntil(['change', 'reset'], () => {
+    const value = field.value
+    if (isNil(initial) || isNil(value)) return value !== initial
+    else return some((field) => field.dirty)
+  })
+  const isTouched = internals.lazyUntil(['change', 'reset'], () => touched || some((field) => field.touched))
+  const isVisited = internals.lazyUntil(['focus'], () => some((field) => field.visited))
+  const isActive = internals.lazyUntil(['focus', 'blur'], () => some((field) => field.active))
 
   assign<any, FieldState<Value>, FieldRest<ObjectField<Value | undefined | null>>>(
     field,
     {
       get value() {
-        return untilChangeOrReset.getValue()
+        return getValue()
       },
       get initial() {
         return initial
@@ -77,22 +66,22 @@ const makeObjectField = <Value extends Obj | undefined | null>(
         return errors
       },
       get valid() {
-        return untilChangeOrReset.isValid()
+        return isValid()
       },
       get dirty() {
-        return untilChangeOrReset.isDirty()
+        return isDirty()
       },
       get pristine() {
         return !field.dirty
       },
       get touched() {
-        return untilChangeOrReset.isTouched()
+        return isTouched()
       },
       get visited() {
-        return untilFocusOrBlur.isVisited()
+        return isVisited()
       },
       get active() {
-        return untilFocusOrBlur.isActive()
+        return isActive()
       },
     } as FieldState<Value>,
     {

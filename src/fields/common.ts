@@ -5,6 +5,7 @@ import type { PrimitiveField, Primitive, PrimitiveDescriptor } from './primitive
 import type { ArrayDescriptor, ArrayField } from './array'
 import type { ObjectField, ObjectDescriptor } from './object'
 import { Form } from './form'
+import { lazy, Lazy } from '../lib/lazy'
 
 export type Obj = Record<string, any>
 export function assign<A extends Obj, B extends Obj>(a: A, b: B): A & B
@@ -98,13 +99,19 @@ export type InjectedData = {
 export type FieldFactory<Value> = (initial: Value, injected: InjectedData) => InferField<Value>
 
 interface Internals<Value> {
+  lazyUntil: <Fn extends (...args: any[]) => any>(eventNames: BaseEventName[], fn: Fn) => Lazy<Fn>
   notify: (eventName: BaseEventName) => void
   on(eventName: BaseEventName, listener: Listener<Value>): Unlisten
 }
 export const makeInternals = <Field extends BaseField<any>>(field: Field): Internals<Field['value']> => {
   type Value = Field['value']
   const listeners = Object.fromEntries(baseEventNames.map((eventName) => [eventName, []])) as unknown as Listeners<Value>
-  return {
+  const internals: Internals<Field['value']> = {
+    lazyUntil: (eventNames, fn) => {
+      const lazyFn = lazy(fn)
+      eventNames.forEach((eventName) => internals.on(eventName, lazyFn.flush))
+      return lazyFn
+    },
     notify: (eventName) => listeners[eventName].forEach((listener) => listener(field as unknown as InferField<Value>)),
     on: (eventName, listener) => {
       listeners[eventName].push(listener)
@@ -113,6 +120,7 @@ export const makeInternals = <Field extends BaseField<any>>(field: Field): Inter
       }
     },
   }
+  return internals
 }
 
 export interface BaseDescriptor<Value> {

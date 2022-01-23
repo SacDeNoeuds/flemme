@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type Fn = (...args: any[]) => any
-type Lazy<F extends Fn> = F & {
+export type Lazy<F extends Fn> = F & {
   flush: () => void
 }
 const nothing = Symbol('nothing')

@@ -1,6 +1,5 @@
 /* eslint-disable security/detect-object-injection */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { lazy } from '../lib/lazy'
 import {
   assign,
   BaseDescriptor,
@@ -45,36 +44,44 @@ const makeArrayField = <Value extends any[] | undefined | null>(
   /** field-level "touched" */
   let touched = false
 
-  const untilChangeOrReset = {
-    getValue: lazy(() => (field.fields ? field.fields.map((f) => f.value) : field.fields) as Value),
-    isValid: lazy(() => field.errors.length === 0 && (field.fields ?? []).every((field) => field.valid)),
-    isDirty: lazy(() => isSelfDirty() || (field.fields?.some((field) => field.dirty) ?? false)),
-    isTouched: lazy(() => touched || (field.fields?.some((field) => field.touched) ?? false)),
-  }
-  const untilFocusOrBlur = {
-    isVisited: lazy(() => field.fields?.some((field) => field.visited) ?? false),
-    isActive: lazy(() => field.fields?.some((field) => field.active) ?? false),
-  }
-  const flushOnChange = () => Object.values(untilChangeOrReset).forEach((value) => value.flush())
-  internals.on('change', flushOnChange)
-  internals.on('reset', flushOnChange)
-  const flushOnFocusBlur = () => Object.values(untilFocusOrBlur).forEach((value) => value.flush())
-  internals.on('focus', flushOnFocusBlur)
-  internals.on('blur', flushOnFocusBlur)
+  const getValue = internals.lazyUntil(['change', 'reset'], () => (field.fields ? field.fields.map((f) => f.value) : field.fields) as Value)
+  const isValid = internals.lazyUntil(['change', 'reset'], () => field.errors.length === 0 && (field.fields ?? []).every((field) => field.valid))
+  const isDirty = internals.lazyUntil(['change', 'reset'], () => isSelfDirty() || (field.fields?.some((field) => field.dirty) ?? false))
+  const isTouched = internals.lazyUntil(['change', 'reset'], () => touched || (field.fields?.some((field) => field.touched) ?? false))
+  const isVisited = internals.lazyUntil(['focus'], () => field.fields?.some((field) => field.visited) ?? false)
+  const isActive = internals.lazyUntil(['focus', 'blur'], () => field.fields?.some((field) => field.active) ?? false)
 
   assign<any, FieldState<Value>, FieldRest<ArrayField<Value | undefined | null>>>(
     field,
-    Object.defineProperties({} as FieldState<Value>, {
-      initial: { get: () => initial, enumerable: true },
-      value: { get: () => untilChangeOrReset.getValue(), enumerable: true },
-      errors: { get: () => errors, enumerable: true },
-      valid: { get: () => untilChangeOrReset.isValid(), enumerable: true },
-      dirty: { get: () => untilChangeOrReset.isDirty(), enumerable: true },
-      pristine: { get: () => !field.dirty, enumerable: true },
-      touched: { get: () => untilChangeOrReset.isTouched(), enumerable: true },
-      visited: { get: () => untilFocusOrBlur.isVisited(), enumerable: true },
-      active: { get: () => untilFocusOrBlur.isActive(), enumerable: true },
-    }),
+    {
+      get initial() {
+        return initial
+      },
+      get value() {
+        return getValue()
+      },
+      get errors() {
+        return errors
+      },
+      get valid() {
+        return isValid()
+      },
+      get dirty() {
+        return isDirty()
+      },
+      get pristine() {
+        return !field.dirty
+      },
+      get touched() {
+        return isTouched()
+      },
+      get visited() {
+        return isVisited()
+      },
+      get active() {
+        return isActive()
+      },
+    } as FieldState<Value>,
     {
       get name() {
         return injected.path.join('.')
