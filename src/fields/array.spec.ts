@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { Validate } from '../lib/validation'
 import { array } from './array'
-import { InferField, InjectedData, Validate } from './common'
+import { InferField, InjectedData } from './common'
 import { primitive } from './primitive'
 import { forbidString } from './spec-helpers'
 

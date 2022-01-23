@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { mustBeBoolean, mustBeDate, mustBeNumber, mustBeOneOf, mustBeString } from '../lib/validation'
-import { Descriptor, InferDescriptor, Validate } from './common'
+import { Validate, mustBeBoolean, mustBeDate, mustBeNumber, mustBeOneOf, mustBeString } from '../lib/validation'
+import { Descriptor, InferDescriptor } from './common'
 import { Primitive, primitive } from './primitive'
 
 export const optional = <T>(descriptor: Descriptor<T>): InferDescriptor<T | undefined> => ({

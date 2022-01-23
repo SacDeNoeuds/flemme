@@ -1,4 +1,4 @@
-import { Validate } from './common'
+import { Validate } from '../lib/validation'
 
 export const forbidString = (needle: string): Validate<string> => {
   return (hay) => {

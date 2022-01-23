@@ -1,22 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { isNil } from '../lib/validation'
-import {
-  assign,
-  BaseDescriptor,
-  baseEventNames,
-  BaseField,
-  composeValidate,
-  Descriptor,
-  FieldRest,
-  FieldState,
-  InferDescriptor,
-  InferField,
-  InjectedData,
-  makeInternals,
-  Obj,
-  Validate,
-  ValidationError,
-} from './common'
+import { isNil, Validate, ValidationError, composeValidate } from '../lib/validation'
+import { assign, BaseDescriptor, baseEventNames, BaseField, Descriptor, FieldRest, FieldState, InferDescriptor, InferField, InjectedData, makeInternals, Obj } from './common'
 
 export type ObjectField<Value extends Obj | undefined | null> = BaseField<Value> & {
   readonly fields: Value extends Obj ? { [Key in keyof Value]: InferField<Value[Key]> } : Extract<Value, undefined | null>

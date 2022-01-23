@@ -20,7 +20,7 @@
 - [x] Add `lazyUntil` in internals
 - [x] Remove form `submitState`, keep only `getErrors()`
 - [x] Add injected data `valdidateOn: EventName[]`
-- [ ] How to handle async validation ?
+- [ ] Handle async validation
 - [ ] Publish package
 - [ ] Add basic documentation
 - [ ] Add export map + react bindings

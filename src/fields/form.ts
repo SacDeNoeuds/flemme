@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { ValidationError } from '../lib/validation'
 import { ArrayField } from './array'
-import { assign, BaseField, InferDescriptor, InferField, InjectedData, makeInternals, Obj, ValidationError } from './common'
+import { assign, BaseField, InferDescriptor, InferField, InjectedData, makeInternals, Obj } from './common'
 import { ObjectField } from './object'
 import { Primitive } from './primitive'
 

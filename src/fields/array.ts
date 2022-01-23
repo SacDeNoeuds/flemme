@@ -1,11 +1,11 @@
 /* eslint-disable security/detect-object-injection */
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { Validate, ValidationError, composeValidate } from '../lib/validation'
 import {
   assign,
   BaseDescriptor,
   baseEventNames,
   BaseField,
-  composeValidate,
   Descriptor,
   FieldRest,
   FieldState,
@@ -14,8 +14,6 @@ import {
   InferValue,
   InjectedData,
   makeInternals,
-  Validate,
-  ValidationError,
 } from './common'
 
 export type ArrayFieldInput<T = any> = T[] | undefined | null

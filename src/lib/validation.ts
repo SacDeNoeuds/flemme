@@ -1,6 +1,20 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Validate, ValidationError } from '../fields/common'
 import type { Primitive } from '../fields/primitive'
+
+export type ValidationError = {
+  message: string
+  meta?: Record<string, unknown>
+}
+export type Validate<Value> = (value: Value | undefined | null) => ValidationError[]
+export const composeValidate = <Value>(...validators: (Validate<Value> | undefined)[]): Validate<Value> => {
+  return (value) => {
+    for (const validate of validators) {
+      const errors = validate?.(value) ?? []
+      if (errors.length > 0) return errors // fail fast
+    }
+    return []
+  }
+}
 
 const errors = {
   mustBeNotNil: (value: any): ValidationError => ({ message: 'Required', meta: { value } }),

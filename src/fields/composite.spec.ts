@@ -1,5 +1,5 @@
-import { array, InferField, object, primitive } from '../main'
-import { InjectedData, Validate } from './common'
+import { array, InferField, object, primitive, Validate } from '../main'
+import { InjectedData } from './common'
 import { forbidString } from './spec-helpers'
 
 describe('composite fields', () => {

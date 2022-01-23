@@ -6,6 +6,7 @@ import type { ArrayDescriptor, ArrayField } from './array'
 import type { ObjectField, ObjectDescriptor } from './object'
 import { Form } from './form'
 import { lazy, Lazy } from '../lib/lazy'
+import { Validate, ValidationError } from '../lib/validation'
 
 export type Obj = Record<string, any>
 export function assign<A extends Obj, B extends Obj>(a: A, b: B): A & B
@@ -15,22 +16,6 @@ export function assign(a: Obj, ...objects: Array<Obj>) {
     ...Object.assign({}, ...objects.map(Object.getOwnPropertyDescriptors)),
   })
   return a
-}
-
-// Validation
-export type ValidationError = {
-  message: string
-  meta?: Record<string, unknown>
-}
-export type Validate<Value> = (value: Value | undefined | null) => ValidationError[]
-export const composeValidate = <Value>(...validators: (Validate<Value> | undefined)[]): Validate<Value> => {
-  return (value) => {
-    for (const validate of validators) {
-      const errors = validate?.(value) ?? []
-      if (errors.length > 0) return errors // fail fast
-    }
-    return []
-  }
 }
 
 // Listeners / Observable / Event system
