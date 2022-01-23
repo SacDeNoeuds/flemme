@@ -18,8 +18,8 @@
 - [x] Re-commit lib as sacdenoeuds
 - [x] Add InferValue `(...args) => BaseDescriptor<infer V>`
 - [x] Add `lazyUntil` in internals
+- [x] Remove form `submitState`, keep only `getErrors()`
 - [ ] Add injected data `valdidateOn: EventName[]`
-- [ ] Remove form `submitState`, keep only `getErrors()`
 - [ ] How to handle async validation ?
 - [ ] Publish package
 - [ ] Add basic documentation

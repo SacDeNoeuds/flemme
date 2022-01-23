@@ -23,26 +23,7 @@ describe('form', () => {
     jest.clearAllMocks()
   })
 
-  it('should initial submit state "NotAsked"', () => expect(cityForm.submitState).toBe('NotAsked'))
   it('should have called init hook', () => expect(onInit).toHaveBeenCalledWith(cityForm))
-
-  it('should update submit state', () => {
-    cityForm.setSubmitState('Pending')
-    expect(cityForm.submitState).toBe('Pending')
-  })
-  it('should reset form with current form value when submit state is "Success"', () => {
-    cityForm.change({ cities: ['Bruxelles'] })
-    cityForm.setSubmitState('Success')
-    expect(cityForm).toMatchObject({
-      value: { cities: ['Bruxelles'] },
-      initial: { cities: ['Bruxelles'] },
-      submitState: 'Success',
-      dirty: false,
-      touched: false,
-      visited: false,
-      valid: true,
-    })
-  })
 
   describe('interactions', () => {
     const initial = { cities: ['Paris'] }

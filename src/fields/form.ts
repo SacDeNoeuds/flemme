@@ -1,30 +1,21 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ArrayField } from './array'
-import { assign, BaseField, InferDescriptor, InferField, Obj, ValidationError } from './common'
+import { assign, BaseField, InferDescriptor, InferField, makeInternals, Obj, ValidationError } from './common'
 import { ObjectField } from './object'
 import { Primitive } from './primitive'
 
-export type SubmitState = 'NotAsked' | 'Invalid' | 'Pending' | 'Failure' | 'Success'
 export type Form<Value> = InferField<Value> & {
-  readonly submitState: SubmitState
-  setSubmitState(state: SubmitState): void
   errors: FormError[]
 }
 
 const makeForm = <Value>(schema: InferDescriptor<Value>, initial: Value): Form<Value> => {
-  let submitState: SubmitState = 'NotAsked'
   const form = {} as Form<Value>
   const field = schema.create(initial as any, { path: [] })
+  const internals = makeInternals(form)
+  const lazyGetErrors = internals.lazyUntil([], () => getErrors(field))
   assign(form, field, {
-    get submitState() {
-      return submitState
-    },
-    setSubmitState: (state: SubmitState) => {
-      submitState = state
-      if (state === 'Success') form.reset(form.value as any)
-    },
     get errors() {
-      return getErrors(field)
+      return lazyGetErrors()
     },
   })
   return Object.seal(form) as Form<Value>
