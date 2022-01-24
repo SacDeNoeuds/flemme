@@ -62,9 +62,16 @@ type FieldDirtyState =
 
 // prettier-ignore
 export type FieldState<Value = any> = FieldValueState<Value> & FieldDirtyState & {
+  /** Initial value of the field, might be undefined (or null) when field is a new array item field for instance */
   readonly initial: Value | undefined | null
+  /** true` when a change − even to same value − has been made. Object and array reflect that value as well */
   readonly touched: boolean
+  /** `true` when the field has gained focus, never changes to false until a reset */
   readonly visited: boolean
+  /**
+   * For primitive fields, `true` when the field has gained focus then `false` when losing it.
+   * For object and array fields, `true` if some of their inner fields visited value is `true`, `false` otherwise
+   */
   readonly active: boolean
 }
 export type FieldRest<T extends Field<any>> = Omit<T, keyof FieldState>
@@ -82,7 +89,6 @@ export type InjectedData = {
   path: Array<string | number>
   validateOn: Exclude<BaseEventName, 'reset'>[]
 }
-export type FieldFactory<Value> = (initial: Value, injected: InjectedData) => InferField<Value>
 
 interface Internals<Value> {
   lazyUntil: <Fn extends (...args: any[]) => any>(eventNames: BaseEventName[], fn: Fn) => Lazy<Fn>

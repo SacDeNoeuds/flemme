@@ -16,6 +16,6 @@ export const string = (...validators: Validate<string>[]) => primitive<string>(m
 export const number = (...validators: Validate<number>[]) => primitive<number>(mustBeNumber(), ...validators)
 export const date = (...validators: Validate<Date>[]) => primitive<Date>(mustBeDate(), ...validators)
 export const boolean = (...validators: Validate<boolean>[]) => primitive(mustBeBoolean(), ...validators)
-export const literal = <Value extends Primitive>(literals: Value[], ...validators: Validate<Value>[]) => {
+export const oneOf = <Value extends Primitive>(literals: Value[], ...validators: Validate<Value>[]) => {
   return primitive<Value>(mustBeOneOf(literals), ...validators)
 }

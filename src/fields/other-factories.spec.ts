@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { boolean, date, literal, nullable, number, optional, string } from './other-factories'
+import { boolean, date, oneOf, nullable, number, optional, string } from './other-factories'
 import { primitive, PrimitiveField } from './primitive'
 import { object, ObjectField } from './object'
 import { array, ArrayField } from './array'
@@ -136,7 +136,7 @@ describe('other factories', () => {
 
 describe.each([
   ['string', string, ['hello', 'world'], [true, false, 12, new Date(), {}, []]],
-  ['literal', () => literal(['a', 'b', 'c']), ['a', 'b', 'c'], [true, false, [], 'z', 12, {}, new Date()]],
+  ['literal', () => oneOf(['a', 'b', 'c']), ['a', 'b', 'c'], [true, false, [], 'z', 12, {}, new Date()]],
   ['number', number, [0, 1, -4, 123], [Infinity, 'Nope', new Date(), {}, [], true, false]],
   ['date', date, [new Date()], [new Date('abc'), 'a', {}, [], 12]],
   ['boolean', boolean, [true, false], ['str', 0, 1, 12, new Date(), {}, []]],

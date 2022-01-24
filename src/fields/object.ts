@@ -174,6 +174,10 @@ export interface ObjectDescriptor<T extends Obj | undefined | null> extends Base
 export type ObjectParams<Value extends Obj | undefined | null> = {
   validators?: Validate<Value>[]
   validateAsync?: ValidateAsync<Value>
+  /**
+   * Triggered when fields are created, which might happen multiple times for optional/nullable object fields
+   * It allows to register event listeners for instance
+   */
   onInit?: (field: InferField<Value>) => void
 }
 export const object = <Value extends Obj>(

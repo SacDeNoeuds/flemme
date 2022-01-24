@@ -22,6 +22,6 @@
 - [x] Add injected data `valdidateOn: EventName[]`
 - [x] Validation: use error code, not message
 - [x] Handle async validation
+- [x] Add basic documentation, API + examples
 - [ ] Publish package
-- [ ] Add basic documentation
 - [ ] Add export map + react bindings

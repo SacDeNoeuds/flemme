@@ -5,7 +5,6 @@ import { assign, BaseDescriptor, BaseField, FieldRest, FieldState, InferField, I
 export type Primitive = string | number | boolean | Date
 
 export type PrimitiveField<Value extends Primitive | undefined | null> = BaseField<Value> & {
-  readonly active: boolean
   focus(): void
   blur(): void
 }

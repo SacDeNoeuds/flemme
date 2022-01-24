@@ -4,6 +4,14 @@
   "description": "Framework-agnostic form manager/handler/abstraction",
   "module": "esm/main.js",
   "types": "esm/main.d.ts",
+  "exports": {
+    ".": {
+      "import": "./esm"
+    },
+    "./validation": {
+      "import": "./esm/validation.js"
+    }
+  },
   "scripts": {
     "prepare": "husky install",
     "build": "rollup -c ./rollup.config.js",
