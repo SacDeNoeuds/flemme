@@ -21,7 +21,7 @@
 - [x] Remove form `submitState`, keep only `getErrors()`
 - [x] Add injected data `valdidateOn: EventName[]`
 - [x] Validation: use error code, not message
-- [ ] Handle async validation
+- [x] Handle async validation
 - [ ] Publish package
 - [ ] Add basic documentation
 - [ ] Add export map + react bindings

@@ -284,4 +284,44 @@ describe('array field', () => {
       })
     })
   })
+
+  describe('async validation', () => {
+    const injected: InjectedData = { path: [], validateOn: ['blur'] }
+    type Arr = string[]
+    const forbidTokyo: Validate<Arr> = (obj) => mustNotContain('Tokyo')(obj?.[0])
+    const forbidParisStub = jest.fn()
+    const forbidParis = mustNotContain('Paris')
+    const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+    const validateCity = async ([city]: Arr) => {
+      await sleep(50)
+      forbidParisStub()
+      return forbidParis(city)
+    }
+    const makeField = (init: Arr) => array(primitive<string>(), { validators: [forbidTokyo], validateAsync: validateCity }).create(init, injected)
+    // let field!: ObjectField<Obj>
+
+    it('should be not trigger async validation when sync already fails', async () => {
+      const field = makeField(['Tokyo'])
+      field.validate()
+      await expect(field.validated).resolves.toBe(undefined)
+      expect(forbidParisStub).not.toHaveBeenCalled()
+    })
+
+    it('should validate asynchronously valid value', async () => {
+      const field = makeField(['Luanda'])
+      field.validate()
+      await expect(field.validated).resolves.toBe(undefined)
+      expect(forbidParisStub).toHaveBeenCalled()
+      expect(field.valid).toBe(true)
+    })
+
+    it('should invalidate asynchronously invalid value', async () => {
+      const field = makeField(['Paris'])
+      field.validate()
+      await expect(field.validated).resolves.toBe(undefined)
+      expect(forbidParisStub).toHaveBeenCalled()
+      expect(field.valid).toBe(false)
+      expect(field.errors).toEqual([{ type: mustNotContain.type, forbidden: 'Paris', value: 'Paris' }])
+    })
+  })
 })

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Validate } from '../main'
 import { InferField, InferValue, InjectedData } from './common'
-import { merge, object } from './object'
+import { merge, object, ObjectField } from './object'
 import { primitive } from './primitive'
 import { mustNotContain } from './spec-helpers'
 
@@ -211,6 +211,46 @@ describe('object field', () => {
         })
         expect(resetListener).toHaveBeenCalled()
       })
+    })
+  })
+
+  describe('async validation', () => {
+    const injected: InjectedData = { path: [], validateOn: ['blur'] }
+    type Obj = { city: string }
+    const forbidTokyo: Validate<Obj> = (obj) => mustNotContain('Tokyo')(obj?.city)
+    const forbidParisStub = jest.fn()
+    const forbidParis = mustNotContain('Paris')
+    const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+    const validateCity = async ({ city }: Obj) => {
+      await sleep(50)
+      forbidParisStub()
+      return forbidParis(city)
+    }
+    const makeField = (init: Obj) => object({ city: primitive<string>() }, { validators: [forbidTokyo], validateAsync: validateCity }).create(init, injected)
+    // let field!: ObjectField<Obj>
+
+    it('should be not trigger async validation when sync already fails', async () => {
+      const field = makeField({ city: 'Tokyo' })
+      field.validate()
+      await expect(field.validated).resolves.toBe(undefined)
+      expect(forbidParisStub).not.toHaveBeenCalled()
+    })
+
+    it('should validate asynchronously valid value', async () => {
+      const field = makeField({ city: 'Luanda' })
+      field.validate()
+      await expect(field.validated).resolves.toBe(undefined)
+      expect(forbidParisStub).toHaveBeenCalled()
+      expect(field.valid).toBe(true)
+    })
+
+    it('should invalidate asynchronously invalid value', async () => {
+      const field = makeField({ city: 'Paris' })
+      field.validate()
+      await expect(field.validated).resolves.toBe(undefined)
+      expect(forbidParisStub).toHaveBeenCalled()
+      expect(field.valid).toBe(false)
+      expect(field.errors).toEqual([{ type: mustNotContain.type, forbidden: 'Paris', value: 'Paris' }])
     })
   })
 })
