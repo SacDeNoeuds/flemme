@@ -3,13 +3,13 @@ import { Validate } from '../lib/validation'
 import { array } from './array'
 import { InferField, InjectedData } from './common'
 import { primitive } from './primitive'
-import { forbidString } from './spec-helpers'
+import { mustNotContain } from './spec-helpers'
 
 describe('array field', () => {
   const injected: InjectedData = { validateOn: ['blur'], path: ['cities'] }
   const forbidTokyoStub = jest.fn(() => [])
-  const forbidTokyo = [forbidString('Tokyo'), forbidTokyoStub]
-  const forbidParis = forbidString('Paris')
+  const forbidTokyo = [mustNotContain('Tokyo'), forbidTokyoStub]
+  const forbidParis = mustNotContain('Paris')
   const cityFieldFactory = primitive(...forbidTokyo)
   const forbidInnerParis: Validate<string[]> = (cities) => cities?.flatMap(forbidParis) ?? []
   const forbidInnerParisStub = jest.fn(() => [])
@@ -39,7 +39,7 @@ describe('array field', () => {
 
   describe.each([
     // prettier-ignore
-    [{ initial: ['Paris'], errors: [{ message: 'Cannot contain "Paris"' }] }],
+    [{ initial: ['Paris'], errors: [{ type: mustNotContain.type, forbidden: 'Paris', value: 'Paris' }] }],
     [{ initial: ['Tokyo'], errors: [] }],
   ])('validation', ({ initial, errors }) => {
     it('should start with a valid state', () => {

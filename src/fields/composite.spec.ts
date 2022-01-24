@@ -1,12 +1,12 @@
 import { array, InferField, object, primitive, Validate } from '../main'
 import { InjectedData } from './common'
-import { forbidString } from './spec-helpers'
+import { mustNotContain } from './spec-helpers'
 
 describe('composite fields', () => {
   const injected: InjectedData = { validateOn: [], path: ['form'] }
   const forbidTokyoStub = jest.fn(() => [])
-  const forbidTokyo = [forbidString('Tokyo'), forbidTokyoStub]
-  const forbidParis = forbidString('Paris')
+  const forbidTokyo = [mustNotContain('Tokyo'), forbidTokyoStub]
+  const forbidParis = mustNotContain('Paris')
   const cityFieldFactory = primitive(...forbidTokyo)
 
   afterEach(() => {
@@ -47,7 +47,7 @@ describe('composite fields', () => {
         expect(field).toMatchObject({
           initial,
           value: initial,
-          errors: [{ message: 'Cannot contain "Paris"' }],
+          errors: [{ type: mustNotContain.type, value: 'Paris', forbidden: 'Paris' }],
           valid: false,
           dirty: false,
           pristine: true,
@@ -108,7 +108,7 @@ describe('composite fields', () => {
         expect(field).toMatchObject({
           initial,
           value: initial,
-          errors: [{ message: 'Cannot contain "Paris"' }],
+          errors: [{ type: mustNotContain.type, forbidden: 'Paris', value: 'Paris' }],
           valid: false,
           dirty: false,
           pristine: true,

@@ -3,11 +3,11 @@ import { InferField } from './common'
 import { form, Form } from './form'
 import { object } from './object'
 import { primitive } from './primitive'
-import { forbidString } from './spec-helpers'
+import { mustNotContain } from './spec-helpers'
 
 describe('form', () => {
   const forbidTokyoStub = jest.fn(() => [])
-  const forbidTokyo = [forbidString('Tokyo'), forbidTokyoStub]
+  const forbidTokyo = [mustNotContain('Tokyo'), forbidTokyoStub]
   const cityFieldFactory = primitive(...forbidTokyo)
 
   const onInit = jest.fn()
@@ -94,7 +94,7 @@ describe('form', () => {
     const makeForm = form({
       schema: object({
         cities: array(object({ name: primitive<string>(...forbidTokyo) })),
-        country: primitive<string>(forbidString('Japan')),
+        country: primitive<string>(mustNotContain('Japan')),
       }),
     })
     let theForm: Form<Value>
@@ -106,15 +106,21 @@ describe('form', () => {
     it('should have errors', () => {
       expect(theForm.errors).toEqual([
         expect.objectContaining({
-          message: 'Cannot contain "Tokyo"',
+          type: mustNotContain.type,
+          forbidden: 'Tokyo',
+          value: 'Tokyo',
           field: expect.objectContaining({ name: 'cities.0.name' }),
         }),
         expect.objectContaining({
-          message: 'Cannot contain "Tokyo"',
+          type: mustNotContain.type,
+          forbidden: 'Tokyo',
+          value: 'Tokyo',
           field: expect.objectContaining({ name: 'cities.1.name' }),
         }),
         expect.objectContaining({
-          message: 'Cannot contain "Japan"',
+          type: mustNotContain.type,
+          forbidden: 'Japan',
+          value: 'Japan',
           field: expect.objectContaining({ name: 'country' }),
         }),
       ])

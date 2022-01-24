@@ -4,11 +4,6 @@ import { primitive, PrimitiveField } from './primitive'
 import { object, ObjectField } from './object'
 import { array, ArrayField } from './array'
 import { BaseDescriptor, Descriptor, InferField, InjectedData } from './common'
-import { overrideErrors } from '../lib/validation'
-
-overrideErrors({
-  mustBeString: () => ({ message: `Expected a string` }),
-})
 
 describe('other factories', () => {
   const injected: InjectedData = { validateOn: [], path: ['someField'] }
@@ -171,11 +166,5 @@ describe.each([
       pristine: true,
       dirty: false,
     })
-  })
-
-  it('should override error', () => {
-    const field = string().create(12 as any, { validateOn: [], path: [] })
-    field.validate()
-    expect(field.errors[0]).toEqual({ message: 'Expected a string' })
   })
 })

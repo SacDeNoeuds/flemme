@@ -1,10 +1,10 @@
 import { InferField, InjectedData } from './common'
 import { primitive } from './primitive'
-import { forbidString } from './spec-helpers'
+import { mustNotContain } from './spec-helpers'
 
 describe('primitive field', () => {
   const injected: InjectedData = { validateOn: ['blur'], path: ['city'] }
-  const forbidTokyo = forbidString('Tokyo')
+  const forbidTokyo = mustNotContain('Tokyo')
   const validate = jest.fn(() => [])
   const field = (value: string) => primitive(forbidTokyo, validate).create(value, injected)
 
@@ -51,7 +51,7 @@ describe('primitive field', () => {
       expect(cityField).toMatchObject({
         initial: invalidInitial,
         value: invalidInitial,
-        errors: [{ message: 'Cannot contain "Tokyo"' }],
+        errors: [{ type: mustNotContain.type, forbidden: 'Tokyo', value: invalidInitial }],
         valid: false,
         dirty: false,
         pristine: true,

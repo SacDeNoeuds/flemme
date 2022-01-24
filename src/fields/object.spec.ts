@@ -3,13 +3,13 @@ import { Validate } from '../main'
 import { InferField, InferValue, InjectedData } from './common'
 import { merge, object } from './object'
 import { primitive } from './primitive'
-import { forbidString } from './spec-helpers'
+import { mustNotContain } from './spec-helpers'
 
 describe('object field', () => {
   const injected: InjectedData = { validateOn: ['blur'], path: ['form'] }
   const forbidTokyoStub = jest.fn(() => [])
-  const forbidTokyo = [forbidTokyoStub, forbidString('Tokyo')]
-  const forbidParis = forbidString('Paris')
+  const forbidTokyo = [forbidTokyoStub, mustNotContain('Tokyo')]
+  const forbidParis = mustNotContain('Paris')
   const cityFieldFactory = primitive(...forbidTokyo)
 
   afterEach(() => {
@@ -41,7 +41,7 @@ describe('object field', () => {
 
   describe.each([
     ['Tokyo', []],
-    ['Paris', [{ message: 'Cannot contain "Paris"' }]],
+    ['Paris', [{ type: mustNotContain.type, forbidden: 'Paris', value: 'Paris' }]],
   ])('with an invalid initial value', (initial, errors) => {
     it('should have a valid initial state', () => {
       expect(makeField({ city: initial })).toMatchObject({
