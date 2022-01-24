@@ -30,25 +30,40 @@ describe('primitive field', () => {
     })
   })
 
-  it('should have an invalid initial state', () => {
-    const initial = 'Go to Tokyo'
-    expect(field(initial)).toMatchObject({
-      initial,
-      value: initial,
-      errors: [{ message: 'Cannot contain "Tokyo"' }],
-      valid: false,
-      dirty: false,
-      pristine: true,
-      touched: false,
-      visited: false,
-      // modified: false,
-      // modifiedSinceLastSubmit: false,
+  describe('validation', () => {
+    const invalidInitial = 'Go to Tokyo'
+    it('should have valid state with invalid initial value', () => {
+      expect(field(invalidInitial)).toMatchObject({
+        initial: invalidInitial,
+        value: invalidInitial,
+        errors: [],
+        valid: true,
+        dirty: false,
+        pristine: true,
+        touched: false,
+        visited: false,
+      })
     })
-  })
 
-  it('should run validate function', () => {
-    field('Singapour').validate()
-    expect(validate).toHaveBeenCalledWith('Singapour')
+    it('should have invalid state after running validation', () => {
+      const cityField = field(invalidInitial)
+      cityField.validate()
+      expect(cityField).toMatchObject({
+        initial: invalidInitial,
+        value: invalidInitial,
+        errors: [{ message: 'Cannot contain "Tokyo"' }],
+        valid: false,
+        dirty: false,
+        pristine: true,
+        touched: false,
+        visited: false,
+      })
+    })
+
+    it('should run validate function', () => {
+      field('Singapour').validate()
+      expect(validate).toHaveBeenCalledWith('Singapour')
+    })
   })
 
   describe('interactions', () => {

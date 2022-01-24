@@ -36,27 +36,41 @@ describe('object field', () => {
       touched: false,
       visited: false,
       active: false,
-      // modified: false,
-      // modifiedSinceLastSubmit: false,
     })
   })
 
-  it.each([
+  describe.each([
     ['Tokyo', []],
     ['Paris', [{ message: 'Cannot contain "Paris"' }]],
-  ])('should have an invalid initial state', (initial, errors) => {
-    expect(makeField({ city: initial })).toMatchObject({
-      initial: { city: initial },
-      value: { city: initial },
-      errors,
-      valid: false,
-      dirty: false,
-      pristine: true,
-      touched: false,
-      visited: false,
-      active: false,
-      // modified: false,
-      // modifiedSinceLastSubmit: false,
+  ])('with an invalid initial value', (initial, errors) => {
+    it('should have a valid initial state', () => {
+      expect(makeField({ city: initial })).toMatchObject({
+        initial: { city: initial },
+        value: { city: initial },
+        errors: [],
+        valid: true,
+        dirty: false,
+        pristine: true,
+        touched: false,
+        visited: false,
+        active: false,
+      })
+    })
+
+    it('should have an invalid state after validation', () => {
+      const field = makeField({ city: initial })
+      field.validate()
+      expect(field).toMatchObject({
+        initial: { city: initial },
+        value: { city: initial },
+        errors,
+        valid: false,
+        dirty: false,
+        pristine: true,
+        touched: false,
+        visited: false,
+        active: false,
+      })
     })
   })
 
@@ -173,8 +187,8 @@ describe('object field', () => {
         expect(field).toMatchObject({
           initial,
           value: initial,
-          errors: [{ message: 'Cannot contain "Paris"' }],
-          valid: false,
+          errors: [],
+          valid: true,
           dirty: false,
           pristine: true,
           touched: false,

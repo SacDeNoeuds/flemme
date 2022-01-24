@@ -24,5 +24,10 @@ module.exports = {
     'prettier/prettier': 'error',
     // 'prettier/prettier': 'off',
     'import/no-unresolved': 'error',
+    // '@typescript-eslint/member-delimiter-style': ['error', {
+    //   "multiline": { "delimiter": "comma", "requireLast": true },
+    //   "singleline": { "delimiter": "comma", "requireLast": false },
+    //   "multilineDetection": "last-member",
+    // }],
   },
 }

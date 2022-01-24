@@ -6,6 +6,7 @@ export type ValidationError = {
   meta?: Record<string, unknown>
 }
 export type Validate<Value> = (value: Value | undefined | null) => ValidationError[]
+export type ValidateAsync<Value> = (value: Value) => Promise<ValidationError[]>
 export const composeValidate = <Value>(...validators: (Validate<Value> | undefined)[]): Validate<Value> => {
   return (value) => {
     for (const validate of validators) {

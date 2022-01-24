@@ -92,7 +92,6 @@ const makePrimitiveField = <Value extends Primitive | undefined | null>(
         touched = false
         visited = false
         active = false
-        field.validate()
         internals.notify('reset')
       },
     },

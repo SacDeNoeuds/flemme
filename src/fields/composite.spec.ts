@@ -43,6 +43,7 @@ describe('composite fields', () => {
 
       it('should return to its initial state', () => {
         field.reset()
+        field.validate()
         expect(field).toMatchObject({
           initial,
           value: initial,
@@ -103,6 +104,7 @@ describe('composite fields', () => {
 
       it('should return to its initial state', () => {
         field.reset()
+        field.validate()
         expect(field).toMatchObject({
           initial,
           value: initial,

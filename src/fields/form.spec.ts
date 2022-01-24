@@ -98,7 +98,10 @@ describe('form', () => {
       }),
     })
     let theForm: Form<Value>
-    beforeEach(() => (theForm = makeForm({ cities: [{ name: 'Tokyo' }, { name: 'Tokyo' }], country: 'Japan' })))
+    beforeEach(() => {
+      theForm = makeForm({ cities: [{ name: 'Tokyo' }, { name: 'Tokyo' }], country: 'Japan' })
+      theForm.validate()
+    })
 
     it('should have errors', () => {
       expect(theForm.errors).toEqual([

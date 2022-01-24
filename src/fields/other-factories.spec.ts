@@ -25,7 +25,10 @@ describe('other factories', () => {
     const makeField = object({ cities: array(cityField) })
     let field: InferField<string>
     describe.each([null, undefined])('with %s', (emptyValue) => {
-      beforeEach(() => (field = makeField.create({ cities: [emptyValue as any] }, { validateOn: [], path: [] }).fields.cities.fields[0] as InferField<string>))
+      beforeEach(() => {
+        field = makeField.create({ cities: [emptyValue as any] }, { validateOn: [], path: [] }).fields.cities.fields[0] as InferField<string>
+        field.validate()
+      })
       it.each([emptyValue])('should have initial value %s', () => expect(field.initial).toBe(emptyValue))
       it.each([emptyValue])('should have value %s', () => expect(field.value).toBe(emptyValue))
       it.each([errorsLength])('should have %s errors', () => expect(field.errors).toHaveLength(errorsLength))
@@ -147,7 +150,9 @@ describe.each([
   const makeField = (init: any) => descriptor.create(init, { validateOn: [], path: [] }) as PrimitiveField<any>
 
   it.each(validValues as any[])('should accept value %s', (validValue) => {
-    expect(makeField(validValue)).toMatchObject({
+    const field = makeField(validValue)
+    field.validate()
+    expect(field).toMatchObject({
       initial: validValue,
       value: validValue,
       valid: true,
@@ -157,7 +162,9 @@ describe.each([
   })
 
   it.each([undefined, null, ...(invalidValues as any[])])('should refuse value %s', (invalidValue) => {
-    expect(makeField(invalidValue)).toMatchObject({
+    const field = makeField(invalidValue)
+    field.validate()
+    expect(field).toMatchObject({
       initial: invalidValue,
       value: invalidValue,
       valid: false,
@@ -168,6 +175,7 @@ describe.each([
 
   it('should override error', () => {
     const field = string().create(12 as any, { validateOn: [], path: [] })
+    field.validate()
     expect(field.errors[0]).toEqual({ message: 'Expected a string' })
   })
 })

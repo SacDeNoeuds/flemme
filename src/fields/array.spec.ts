@@ -37,10 +37,30 @@ describe('array field', () => {
     })
   })
 
-  it.each([[{ initial: ['Paris'], errors: [{ message: 'Cannot contain "Paris"' }] }], [{ initial: ['Tokyo'], errors: [] }]])(
-    'should have an invalid initial state',
-    ({ initial, errors }) => {
+  describe.each([
+    // prettier-ignore
+    [{ initial: ['Paris'], errors: [{ message: 'Cannot contain "Paris"' }] }],
+    [{ initial: ['Tokyo'], errors: [] }],
+  ])('validation', ({ initial, errors }) => {
+    it('should start with a valid state', () => {
       const field = makeField(initial)
+      expect(forbidInnerParisStub).not.toHaveBeenCalled()
+      expect(field).toMatchObject({
+        initial,
+        value: initial,
+        errors: [],
+        valid: true,
+        dirty: false,
+        pristine: true,
+        touched: false,
+        visited: false,
+        active: false,
+      })
+    })
+
+    it('should have an invalid initial state', () => {
+      const field = makeField(initial)
+      field.validate()
       expect(forbidInnerParisStub).toHaveBeenCalled()
       expect(field).toMatchObject({
         initial,
@@ -53,8 +73,8 @@ describe('array field', () => {
         visited: false,
         active: false,
       })
-    },
-  )
+    })
+  })
 
   it('should run validate function', () => {
     makeField(['Singapour']).validate()
@@ -190,8 +210,8 @@ describe('array field', () => {
         expect(field).toMatchObject({
           initial,
           value: initial,
-          errors: [{ message: 'Cannot contain "Paris"' }],
-          valid: false,
+          errors: [],
+          valid: true,
           dirty: false,
           pristine: true,
           touched: false,
