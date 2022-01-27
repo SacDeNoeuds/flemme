@@ -23,5 +23,6 @@
 - [x] Validation: use error code, not message
 - [x] Handle async validation
 - [x] Add basic documentation, API + examples
+- [ ] Create demos
 - [ ] Publish package
 - [ ] Add export map + react bindings
