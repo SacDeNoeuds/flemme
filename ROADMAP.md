@@ -19,10 +19,15 @@
 - [x] Add InferValue `(...args) => BaseDescriptor<infer V>`
 - [x] Add `lazyUntil` in internals
 - [x] Remove form `submitState`, keep only `getErrors()`
-- [x] Add injected data `valdidateOn: EventName[]`
+- [x] Add injected data `validateOn: EventName[]`
 - [x] Validation: use error code, not message
 - [x] Handle async validation
 - [x] Add basic documentation, API + examples
-- [ ] Create demos
+- [x] Add export map
+- [x] Add a form submit `{ submit: (handler: (form: Form<T>) => Promise<void>) => Promise<void> }`, make it handle the touched/visited etc. of each primitive field + reset the form on success
+- [x] Create demos
+- [x] react hooks bindings
+- [ ] react class components bindings
+- [ ] Add tests with all the changes I made: validated, validateAsync, …
+- [ ] Allow to add items to an undefined array (+ tests ;)
 - [ ] Publish package
-- [ ] Add export map + react bindings

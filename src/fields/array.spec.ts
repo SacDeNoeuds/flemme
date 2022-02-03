@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Validate } from '../lib/validation'
+import { Validator } from '../lib/validation'
 import { array } from './array'
 import { InferField, InjectedData } from './common'
 import { primitive } from './primitive'
@@ -11,7 +11,7 @@ describe('array field', () => {
   const forbidTokyo = [mustNotContain('Tokyo'), forbidTokyoStub]
   const forbidParis = mustNotContain('Paris')
   const cityFieldFactory = primitive(...forbidTokyo)
-  const forbidInnerParis: Validate<string[]> = (cities) => cities?.flatMap(forbidParis) ?? []
+  const forbidInnerParis: Validator<string[]> = (cities) => cities?.flatMap(forbidParis) ?? []
   const forbidInnerParisStub = jest.fn(() => [])
   const onInit = jest.fn()
   const makeField = (init: string[]) => array(cityFieldFactory, { validators: [forbidInnerParisStub, forbidInnerParis], onInit }).create(init, injected)
@@ -288,7 +288,7 @@ describe('array field', () => {
   describe('async validation', () => {
     const injected: InjectedData = { path: [], validateOn: ['blur'] }
     type Arr = string[]
-    const forbidTokyo: Validate<Arr> = (obj) => mustNotContain('Tokyo')(obj?.[0])
+    const forbidTokyo: Validator<Arr> = (obj) => mustNotContain('Tokyo')(obj?.[0])
     const forbidParisStub = jest.fn()
     const forbidParis = mustNotContain('Paris')
     const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))

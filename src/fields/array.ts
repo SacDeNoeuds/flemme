@@ -1,11 +1,11 @@
 /* eslint-disable security/detect-object-injection */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Validate, ValidateAsync, ValidationError, composeValidate, isNil } from '../lib/validation'
+import { Validator, ValidateAsync, ValidationError, composeValidate, isNil } from '../lib/validation'
 import {
   assign,
   BaseDescriptor,
-  baseEventNames,
   BaseField,
+  bubblingEvents,
   Descriptor,
   FieldRest,
   FieldState,
@@ -14,14 +14,17 @@ import {
   InferValue,
   InjectedData,
   makeInternals,
+  Obj,
 } from './common'
 
 export type ArrayFieldInput<T = any> = T[] | undefined | null
 
+type MapIfObj<O, T> = O extends Obj ? { [Key in keyof Obj]: MapIfObj<Obj[Key], T> } : O | T
+
 export type ArrayField<Value extends any[] | undefined | null> = BaseField<Value> & {
   fields: Value extends any[] ? InferField<Value[number]>[] : Extract<Value, null | undefined>
   validated: Promise<void> // for validateAsync
-  add(item: NonNullable<Value>[number], index?: number): void
+  add(item: MapIfObj<NonNullable<Value>[number], undefined>, index?: number): void
   remove(index: number): void
   move(index: number, targetIndex: number): void
 }
@@ -29,8 +32,9 @@ export type ArrayField<Value extends any[] | undefined | null> = BaseField<Value
 const makeArrayField = <Value extends any[] | undefined | null>(
   item: InferDescriptor<NonNullable<Value>[number]>,
   initial: Value | undefined | null,
-  validators: Validate<Value>[] = [],
+  validators: Validator<Value>[] = [],
   injected: InjectedData,
+  required: boolean,
   validateAsync?: ValidateAsync<Value>,
 ): ArrayField<Value> => {
   type ItemValue = NonNullable<Value>[number]
@@ -48,11 +52,17 @@ const makeArrayField = <Value extends any[] | undefined | null>(
   let activeValidated = validated
 
   const getValue = internals.lazyUntil(['change', 'reset'], () => (field.fields ? field.fields.map((f) => f.value) : field.fields) as Value)
-  const isValid = internals.lazyUntil([...validateOn, 'reset'], () => field.errors.length === 0 && (field.fields ?? []).every((field) => field.valid))
+  const isValid = internals.lazyUntil(
+    ['reset', 'validated', 'change'], // watch 'change' because of array operations like add & remove
+    () => field.errors.length === 0 && (field.fields ?? []).every((field) => field.valid),
+  )
   const isDirty = internals.lazyUntil(['change', 'reset'], () => isSelfDirty() || (field.fields?.some((field) => field.dirty) ?? false))
-  const isTouched = internals.lazyUntil(['change', 'reset'], () => touched || (field.fields?.some((field) => field.touched) ?? false))
-  const isVisited = internals.lazyUntil(['focus'], () => field.fields?.some((field) => field.visited) ?? false)
+  const isTouched = internals.lazyUntil(['change', 'reset', 'validated'], () => touched || (field.fields?.some((field) => field.touched) ?? false))
+  const isVisited = internals.lazyUntil(['focus', 'validated'], () => field.fields?.some((field) => field.visited) ?? false)
   const isActive = internals.lazyUntil(['focus', 'blur'], () => field.fields?.some((field) => field.active) ?? false)
+  const getValidated = internals.lazyUntil(['validateAsync'], () => {
+    return Promise.all([validated, ...(fields ?? []).map((field: any) => field.validated).filter(Boolean)]).then(() => void 0)
+  })
 
   assign<any, FieldState<Value>, FieldRest<ArrayField<Value | undefined | null>>>(
     field,
@@ -84,6 +94,9 @@ const makeArrayField = <Value extends any[] | undefined | null>(
       get active() {
         return isActive()
       },
+      get required() {
+        return required
+      },
     } as FieldState<Value>,
     {
       get name() {
@@ -93,7 +106,7 @@ const makeArrayField = <Value extends any[] | undefined | null>(
         return fields as any
       },
       get validated() {
-        return validated
+        return getValidated()
       },
 
       reset: (nextInitial = field.initial) => {
@@ -103,13 +116,14 @@ const makeArrayField = <Value extends any[] | undefined | null>(
         internals.notify('reset')
       },
       change: (value) => {
-        if (!value) {
+        if (!value || value.length === 0) {
           fields = value
           touched = true
+          internals.notify('change')
           return
         }
         if (!fields) fields = []
-        fields.length = value.length
+        if (fields.length > value.length) fields.length = value.length // remove elements
         value.forEach((item, index) => {
           if (!fields) throw new Error('impossible mutation')
           if (fields[index]) fields[index].change(item as any)
@@ -122,14 +136,8 @@ const makeArrayField = <Value extends any[] | undefined | null>(
       },
       on: (eventName, listener) => internals.on(eventName, listener),
       validate: () => {
-        errors = validate(field.value)
+        validateSelf()
         fields?.map((f) => f.validate())
-        if (isNil(field.value) || errors.length > 0 || !validateAsync) return
-        activeValidated = validated = validateAsync(field.value).then((err) => {
-          if (activeValidated !== validated) return
-          errors = [...errors, ...err]
-          isValid.flush()
-        })
       },
       add: (item) => {
         if (!field.value) throw new Error('cannot add item to undefined value')
@@ -159,16 +167,14 @@ const makeArrayField = <Value extends any[] | undefined | null>(
 
   function setup() {
     validateOn.forEach((eventName) => {
-      field.on(eventName, () => {
-        errors = validate(field.value)
-      })
+      field.on(eventName, validateSelf)
     })
     field.reset(initial)
   }
 
   function createItemField(itemValue: ItemValue | undefined, index: number): InferField<ItemValue> {
     const itemField = item.create(itemValue as ItemValue, { ...injected, path: [...injected.path, index] })
-    baseEventNames.forEach((eventName) => itemField.on(eventName, () => internals.notify(eventName)))
+    bubblingEvents.forEach((eventName) => itemField.on(eventName, () => internals.notify(eventName)))
     return itemField as any
   }
 
@@ -176,6 +182,16 @@ const makeArrayField = <Value extends any[] | undefined | null>(
     if (!field.initial) return field.initial !== field.fields
     if (!field.fields) return field.fields !== field.initial
     return field.initial.length !== field.fields.length
+  }
+  function validateSelf() {
+    errors = validate(field.value)
+    if (isNil(field.value) || errors.length > 0 || !validateAsync) return internals.notify('validated')
+    activeValidated = validated = validateAsync(field.value).then((err) => {
+      if (activeValidated !== validated) return
+      errors = err
+      internals.notify('validated')
+    })
+    internals.notify('validateAsync')
   }
 }
 
@@ -185,7 +201,7 @@ export interface ArrayDescriptor<T extends any[] | undefined | null> extends Bas
 }
 
 export type ArrayParams<D extends Descriptor<any>> = {
-  validators?: Validate<InferValue<D>[]>[]
+  validators?: Validator<InferValue<D>[]>[]
   validateAsync?: ValidateAsync<InferValue<D>[]>
   onInit?: (field: ArrayField<InferValue<D>[]>) => void
 }
@@ -194,8 +210,9 @@ export const array = <D extends Descriptor<any>>(item: D, { validators, validate
   onInit: onInit as any,
   validators,
   item: item as any,
+  isRequired: true,
   create(initial, injected): InferField<InferValue<D>[]> {
-    const field = makeArrayField(this.item, initial, this.validators, injected, validateAsync) as InferField<InferValue<D>[]>
+    const field = makeArrayField(this.item, initial, this.validators, injected, this.isRequired, validateAsync) as InferField<InferValue<D>[]>
     this.onInit?.(field)
     return field
   },

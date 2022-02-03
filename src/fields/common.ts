@@ -6,7 +6,7 @@ import type { ArrayDescriptor, ArrayField } from './array'
 import type { ObjectField, ObjectDescriptor } from './object'
 import { Form } from './form'
 import { lazy, Lazy } from '../lib/lazy'
-import { Validate, ValidationError } from '../lib/validation'
+import { Validator, ValidationError } from '../lib/validation'
 
 export type Obj = Record<string, any>
 export function assign<A extends Obj, B extends Obj>(a: A, b: B): A & B
@@ -21,9 +21,10 @@ export function assign(a: Obj, ...objects: Array<Obj>) {
 // Listeners / Observable / Event system
 export type Unlisten = () => void
 export type Listener<Value> = (field: InferField<Value>) => void
-export const baseEventNames = ['change', 'blur', 'focus', 'reset'] as const
-export type BaseEventName = typeof baseEventNames[number]
-export type Listeners<Value> = Record<BaseEventName, Listener<Value>[]>
+export const events = ['change', 'blur', 'focus', 'reset', 'validated', 'validateAsync'] as const
+export const bubblingEvents: EventName[] = ['blur', 'change', 'focus', 'reset']
+export type EventName = typeof events[number]
+export type Listeners<Value> = Record<EventName, Listener<Value>[]>
 
 // Field types
 export type InferField<Value> = NonNullable<Value> extends any[]
@@ -37,7 +38,7 @@ export type InferField<Value> = NonNullable<Value> extends any[]
   : never
 
 /* prettier-ignore */
-export type Field<T> =
+export type AnyField<T = any> =
   | PrimitiveField<Extract<T, Primitive | undefined | null>>
   | ArrayField<Extract<T, any[] | undefined | null>>
   | ObjectField<Extract<T, Obj | undefined | null>>
@@ -73,31 +74,32 @@ export type FieldState<Value = any> = FieldValueState<Value> & FieldDirtyState &
    * For object and array fields, `true` if some of their inner fields visited value is `true`, `false` otherwise
    */
   readonly active: boolean
+  readonly required: boolean
 }
-export type FieldRest<T extends Field<any>> = Omit<T, keyof FieldState>
+export type FieldRest<T extends AnyField<any>> = Omit<T, keyof FieldState>
 
 // prettier-ignore
 export type BaseField<Value> = {
   readonly name: string
   reset(nextInitial?: Value | undefined | null): void
   validate(): void
-  on(eventName: BaseEventName, listener: Listener<Value>): Unlisten
+  on(eventName: EventName, listener: Listener<Value>): Unlisten
   change(value: Value | undefined | null): void
 } & FieldState<Value>
 
 export type InjectedData = {
   path: Array<string | number>
-  validateOn: Exclude<BaseEventName, 'reset'>[]
+  validateOn: Exclude<EventName, 'reset'>[]
 }
 
-interface Internals<Value> {
-  lazyUntil: <Fn extends (...args: any[]) => any>(eventNames: BaseEventName[], fn: Fn) => Lazy<Fn>
-  notify: (eventName: BaseEventName) => void
-  on(eventName: BaseEventName, listener: Listener<Value>): Unlisten
+export interface Internals<Value> {
+  lazyUntil: <Fn extends (...args: any[]) => any>(eventNames: EventName[], fn: Fn) => Lazy<Fn>
+  notify: (eventName: EventName) => void
+  on(eventName: EventName, listener: Listener<Value>): Unlisten
 }
 export const makeInternals = <Field extends BaseField<any>>(field: Field): Internals<Field['value']> => {
   type Value = Field['value']
-  const listeners = Object.fromEntries(baseEventNames.map((eventName) => [eventName, []])) as unknown as Listeners<Value>
+  const listeners = Object.fromEntries(events.map((eventName) => [eventName, []])) as unknown as Listeners<Value>
   const internals: Internals<Field['value']> = {
     lazyUntil: (eventNames, fn) => {
       const lazyFn = lazy(fn)
@@ -117,9 +119,9 @@ export const makeInternals = <Field extends BaseField<any>>(field: Field): Inter
 
 export interface BaseDescriptor<Value> {
   type: 'primitive' | 'object' | 'array' // useful only to discriminate types
-  validators?: Validate<Value>[]
+  validators?: Validator<Value>[]
   onInit?: (field: InferField<Value>) => void
-  isRequired?: boolean
+  isRequired: boolean
   create(initial: Value | undefined, injected: InjectedData): InferField<Value>
 }
 

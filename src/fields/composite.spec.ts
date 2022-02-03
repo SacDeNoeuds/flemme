@@ -1,4 +1,4 @@
-import { array, InferField, object, primitive, Validate } from '../main'
+import { array, InferField, object, primitive, Validator } from '../main'
 import { InjectedData } from './common'
 import { mustNotContain } from './spec-helpers'
 
@@ -16,7 +16,7 @@ describe('composite fields', () => {
 
   describe('object of array', () => {
     type Obj = { cities: string[] }
-    const forbidInnerParis: Validate<Obj> = (data) => data?.cities.flatMap(forbidParis) ?? []
+    const forbidInnerParis: Validator<Obj> = (data) => data?.cities.flatMap(forbidParis) ?? []
     const forbidInnerParisStub = jest.fn(() => [])
     const onInit = jest.fn()
     const resetListener = jest.fn()
@@ -76,7 +76,7 @@ describe('composite fields', () => {
 
   describe('array of object', () => {
     type Obj = { city: string }
-    const forbidInnerParis: Validate<Obj[]> = (cities) => cities?.flatMap(({ city }) => forbidParis(city)) ?? []
+    const forbidInnerParis: Validator<Obj[]> = (cities) => cities?.flatMap(({ city }) => forbidParis(city)) ?? []
     const forbidInnerParisStub = jest.fn(() => [])
     const onInit = jest.fn()
     const resetListener = jest.fn()
@@ -137,7 +137,7 @@ describe('composite fields', () => {
 
   describe('object of array of object', () => {
     type Obj = { cities: string[] }
-    const forbidInnerParis: Validate<Obj[]> = (forms) => forms?.flatMap(({ cities }) => cities.flatMap(forbidParis)) ?? []
+    const forbidInnerParis: Validator<Obj[]> = (forms) => forms?.flatMap(({ cities }) => cities.flatMap(forbidParis)) ?? []
     const forbidInnerParisStub = jest.fn(() => [])
     const onInit = jest.fn()
     const makeField = (init: Obj[]) =>

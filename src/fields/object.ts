@@ -1,6 +1,7 @@
+/* eslint-disable security/detect-object-injection */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { isNil, Validate, ValidateAsync, ValidationError, composeValidate } from '../lib/validation'
-import { assign, BaseDescriptor, baseEventNames, BaseField, Descriptor, FieldRest, FieldState, InferDescriptor, InferField, InjectedData, makeInternals, Obj } from './common'
+import { isNil, Validator, ValidateAsync, ValidationError, composeValidate } from '../lib/validation'
+import { assign, BaseDescriptor, BaseField, bubblingEvents, Descriptor, FieldRest, FieldState, InferDescriptor, InferField, InjectedData, makeInternals, Obj } from './common'
 
 export type ObjectField<Value extends Obj | undefined | null> = BaseField<Value> & {
   readonly fields: Value extends Obj ? { [Key in keyof Value]: InferField<Value[Key]> } : Extract<Value, undefined | null>
@@ -10,8 +11,9 @@ export type ObjectField<Value extends Obj | undefined | null> = BaseField<Value>
 const makeObjectField = <Value extends Obj | undefined | null>(
   factories: { [Key in keyof Value]: InferDescriptor<Value[Key]> },
   initial: Value | undefined | null,
-  validators: Validate<Value>[] = [],
+  validators: Validator<Value>[] = [],
   injected: InjectedData,
+  required: boolean,
   validateAsync?: ValidateAsync<Value>,
   onFieldsCreated?: (field: ObjectField<Value>) => void,
 ): ObjectField<Value> => {
@@ -32,15 +34,23 @@ const makeObjectField = <Value extends Obj | undefined | null>(
     const entries = Object.entries(field.fields).map(([key, f]) => [key, f.value]) as [keyof Value, Value[]][]
     return Object.fromEntries(entries) as Exclude<Value, undefined | null>
   })
-  const isValid = internals.lazyUntil([...validateOn, 'reset'], () => field.errors.length === 0 && !some((field) => !field.valid))
+  const isValid = internals.lazyUntil(['reset', 'validated'], () => field.errors.length === 0 && !some((field) => !field.valid))
   const isDirty = internals.lazyUntil(['change', 'reset'], () => {
     const value = field.value
     if (isNil(initial) || isNil(value)) return value !== initial
     else return some((field) => field.dirty)
   })
-  const isTouched = internals.lazyUntil(['change', 'reset'], () => touched || some((field) => field.touched))
-  const isVisited = internals.lazyUntil(['focus'], () => some((field) => field.visited))
+  const isTouched = internals.lazyUntil(['change', 'reset', 'validated'], () => touched || some((field) => field.touched))
+  const isVisited = internals.lazyUntil(['focus', 'validated'], () => some((field) => field.visited))
   const isActive = internals.lazyUntil(['focus', 'blur'], () => some((field) => field.active))
+  const getValidated = internals.lazyUntil(['validateAsync'], () => {
+    return Promise.all([
+      validated,
+      ...Object.values(field.fields ?? {})
+        .map((field: any) => field.validated)
+        .filter(Boolean),
+    ]).then(() => void 0)
+  })
 
   assign<any, FieldState<Value>, FieldRest<ObjectField<Value | undefined | null>>>(
     field,
@@ -72,6 +82,9 @@ const makeObjectField = <Value extends Obj | undefined | null>(
       get active() {
         return isActive()
       },
+      get required() {
+        return required
+      },
     } as FieldState<Value>,
     {
       get name() {
@@ -81,7 +94,7 @@ const makeObjectField = <Value extends Obj | undefined | null>(
         return fields as any
       },
       get validated() {
-        return validated
+        return getValidated()
       },
 
       reset: (nextInitial = field.initial): void => {
@@ -95,7 +108,7 @@ const makeObjectField = <Value extends Obj | undefined | null>(
         if (value) {
           if (!fields) setFields({} as Value, value)
           map((field, key): void => {
-            if (value.hasOwnProperty(key)) field.change(value[key as any])
+            field.change(value[key as any]) // will fallback to undefined if key is not populated
           })
         } else {
           // value is nil here
@@ -107,14 +120,8 @@ const makeObjectField = <Value extends Obj | undefined | null>(
       on: (eventName, listener) => internals.on(eventName, listener),
 
       validate: () => {
-        errors = validate(field.value)
         map((field) => field.validate())
-        if (isNil(field.value) || errors.length > 0 || !validateAsync) return
-        activeValidated = validated = validateAsync(field.value).then((err) => {
-          if (activeValidated !== validated) return
-          errors = [...errors, ...err]
-          isValid.flush()
-        })
+        validateSelf()
       },
     },
   )
@@ -125,7 +132,7 @@ const makeObjectField = <Value extends Obj | undefined | null>(
 
   function forwardFieldEvents(fields: { [Key in keyof Value]: InferField<Value[Key]> }) {
     Object.values(fields).forEach((innerField: any) => {
-      baseEventNames.forEach((eventName) => innerField.on(eventName, () => internals.notify(eventName)))
+      bubblingEvents.forEach((eventName) => innerField.on(eventName, () => internals.notify(eventName)))
     })
   }
 
@@ -134,9 +141,7 @@ const makeObjectField = <Value extends Obj | undefined | null>(
     // Set listeners
     if (field.fields) forwardFieldEvents(field.fields as any)
     validateOn.forEach((eventName) => {
-      field.on(eventName, () => {
-        errors = validate(field.value)
-      })
+      field.on(eventName, validateSelf)
     })
     // initialize
     field.reset(initial)
@@ -164,15 +169,27 @@ const makeObjectField = <Value extends Obj | undefined | null>(
     forwardFieldEvents(sealed)
     return sealed
   }
+
+  function validateSelf() {
+    errors = validate(field.value)
+    if (isNil(field.value) || errors.length > 0 || !validateAsync) return internals.notify('validated')
+    activeValidated = validated = validateAsync(field.value).then((err) => {
+      if (activeValidated !== validated) return
+      errors = err
+      internals.notify('validated')
+    })
+    internals.notify('validateAsync')
+  }
 }
 
 export interface ObjectDescriptor<T extends Obj | undefined | null> extends BaseDescriptor<T> {
   type: 'object'
   fields: { [Key in keyof T]: InferDescriptor<T[Key]> }
+  validateAsync: ValidateAsync<T> | undefined
 }
 
 export type ObjectParams<Value extends Obj | undefined | null> = {
-  validators?: Validate<Value>[]
+  validators?: Validator<Value>[]
   validateAsync?: ValidateAsync<Value>
   /**
    * Triggered when fields are created, which might happen multiple times for optional/nullable object fields
@@ -188,8 +205,10 @@ export const object = <Value extends Obj>(
   fields,
   onInit,
   validators,
+  isRequired: true,
+  validateAsync,
   create(initial, injected) {
-    return makeObjectField(this.fields, initial, this.validators, injected, validateAsync, this.onInit as any) as InferField<Value>
+    return makeObjectField(this.fields, initial, this.validators, injected, this.isRequired, validateAsync, this.onInit as any) as InferField<Value>
   },
 })
 
@@ -204,6 +223,10 @@ const merge2 = <A extends Obj, B extends Obj>(a: ObjectDescriptor<A>, b: ObjectD
       b.onInit?.(field)
     },
     validators: [...(a.validators ?? []), ...(b.validators ?? [])],
+    validateAsync:
+      !a.validateAsync && !b.validateAsync
+        ? undefined
+        : (value) => Promise.all([a.validateAsync, b.validateAsync].map((validateAsync) => validateAsync?.(value) ?? [])).then((errors) => errors.flat(1)),
   })
 }
 

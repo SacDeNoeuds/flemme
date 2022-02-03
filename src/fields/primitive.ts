@@ -1,5 +1,6 @@
+/* eslint-disable security/detect-object-injection */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Validate, ValidationError, composeValidate, isDate, mustBeNotNil } from '../lib/validation'
+import { Validator, ValidationError, composeValidate, isDate, mustBeNotNil } from '../lib/validation'
 import { assign, BaseDescriptor, BaseField, FieldRest, FieldState, InferField, InjectedData, makeInternals } from './common'
 
 export type Primitive = string | number | boolean | Date
@@ -15,7 +16,7 @@ const isPrimitiveEqual = <T extends Primitive | undefined | null>(a: T, b: T): b
 }
 const makePrimitiveField = <Value extends Primitive | undefined | null>(
   initial: Value | undefined | null,
-  validators: Validate<Value>[] = [],
+  validators: Validator<Value>[] = [],
   injected: InjectedData,
   isRequired = true,
 ): PrimitiveField<Value> => {
@@ -60,6 +61,9 @@ const makePrimitiveField = <Value extends Primitive | undefined | null>(
       get active() {
         return active
       },
+      get required() {
+        return isRequired
+      },
     } as FieldState<Value>,
     {
       get name() {
@@ -82,6 +86,7 @@ const makePrimitiveField = <Value extends Primitive | undefined | null>(
       },
       validate: () => {
         errors = validate(field.value)
+        internals.notify('validated')
       },
       on: (eventName, listener) => internals.on(eventName, listener),
       reset: (nextInitial = field.initial) => {
@@ -96,6 +101,13 @@ const makePrimitiveField = <Value extends Primitive | undefined | null>(
     },
   )
   setup()
+  backdoors.set(field, {
+    markAsSubmitted: () => {
+      touched = true
+      visited = true
+    },
+  })
+
   return Object.seal(field)
 
   function setup() {
@@ -108,9 +120,15 @@ export interface PrimitiveDescriptor<T extends Primitive | undefined | null> ext
   type: 'primitive'
 }
 
-export const primitive = <T extends Primitive>(...validators: Validate<T>[]): PrimitiveDescriptor<T> => ({
+type Backdoor = {
+  markAsSubmitted: () => void
+}
+export const backdoors = new WeakMap<PrimitiveField<any>, Backdoor>()
+
+export const primitive = <T extends Primitive>(...validators: Validator<T>[]): PrimitiveDescriptor<T> => ({
   type: 'primitive',
   validators,
+  isRequired: true,
   create(initial, injected): InferField<T> {
     return makePrimitiveField(initial, this.validators, injected, this.isRequired) as InferField<T>
   },

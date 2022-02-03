@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { mustNotContain } from '../fields/spec-helpers'
-import { mustHaveMinLength, mustHaveMaxLength, composeValidate, errorType } from './validation'
+import { minLength, maxLength, composeValidate, ErrorType } from './validation'
 
 describe('composeValidate', () => {
   const validate = composeValidate(mustNotContain('Paris'), undefined, mustNotContain('Tokyo'))
@@ -20,12 +20,12 @@ describe('composeValidate', () => {
 
 describe('validators', () => {
   const min = 2
-  const minError = (value: any) => ({ type: errorType.mustHaveMinLength, value, min })
+  const minError = (value: any) => ({ type: ErrorType.MinLength, value, min })
   const max = 4
-  const maxError = (value: any) => ({ type: errorType.mustHaveMaxLength, value, max })
+  const maxError = (value: any) => ({ type: ErrorType.MaxLength, value, max })
   describe.each([
-    ['min length', min, { validate: mustHaveMinLength(min), error: minError, passing: [2, 3], failing: [0, 1] }],
-    ['max length', max, { validate: mustHaveMaxLength(max), error: maxError, passing: [0, 4], failing: [5, 6] }],
+    ['min length', min, { validate: minLength(min), error: minError, passing: [2, 3], failing: [0, 1] }],
+    ['max length', max, { validate: maxLength(max), error: maxError, passing: [0, 4], failing: [5, 6] }],
   ])('must have %s %s', (_, __, { validate, passing, failing, error }) => {
     const toString = (count: number) => new Array(count).fill('a').join('')
     const toArray = (count: number) => new Array(count).fill('a')

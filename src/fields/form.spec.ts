@@ -15,16 +15,27 @@ describe('form', () => {
   let cityForm!: Form<CityObj>
   const makeCityForm = form<CityObj>({
     schema: object({ cities: array(cityFieldFactory) }),
-    validateOn: ['blur'],
     onInit,
   })
-  beforeEach(() => (cityForm = makeCityForm({ cities: ['Amsterdam'] })))
+  beforeEach(() => (cityForm = makeCityForm({ cities: ['Amsterdam'] }, { validateOn: ['blur'] })))
   afterEach(() => {
     jest.resetAllMocks()
     jest.clearAllMocks()
   })
 
   it('should have called init hook', () => expect(onInit).toHaveBeenCalledWith(cityForm))
+
+  it('should allow to create an empty form', () => {
+    const makeComplexForm = form({
+      schema: object({
+        country: object({
+          cities: array(primitive<string>()),
+        }),
+      }),
+    })
+    expect(() => makeComplexForm({})).not.toThrow()
+    expect(() => makeComplexForm({ country: {} })).not.toThrow()
+  })
 
   describe('interactions', () => {
     const initial = { cities: ['Paris'] }

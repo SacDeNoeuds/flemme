@@ -1,3 +1,6 @@
+// /* eslint-disable prettier/prettier */
+// /* eslint-disable @typescript-eslint/no-explicit-any */
+// /* eslint-disable security/detect-object-injection */
 // import { ReactNode, useEffect, useState } from 'react'
 // import { BaseField } from './main'
 
@@ -24,13 +27,24 @@
 // export const useTouched = makeFieldStateHook('touched', ['change'])
 // export const useVisited = makeFieldStateHook('visited', ['focus', 'blur'])
 
-// type WhenProps<Value extends any> = {
+// export const useField = <T extends BaseField<any>>(field: T): T => ({
+//   ...field,
+//   value: useValue(field),
+//   errors: useErrors(field),
+//   valid: useValid(field),
+//   dirty: useDirty(field),
+//   pristine: usePristine(field),
+//   touched: useTouched(field),
+//   visited: useVisited(field),
+// })
+
+// type WhenProps<Value> = {
 //   is: Value
-//   isEqual?: (a: Value, b: Value) => boolean
+//   isEqual?: (a: Value | undefined | null, b: Value | undefined | null) => boolean
 //   field: BaseField<Value>
 //   children: ReactNode,
 // }
-// export const When = <Value extends any>({
+// export const When = <Value,>({
 //   field,
 //   is,
 //   isEqual = (a, b) => a === b,

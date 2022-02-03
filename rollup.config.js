@@ -9,7 +9,8 @@ import { terser } from 'rollup-plugin-terser'
 const isDebug = ['debug', 'dev', 'development'].includes(process.env.NODE_ENV)
 
 const folders = {
-  esm: './esm',
+  esm: './build/esm',
+  cjs: './build/cjs',
 }
 
 const plugins = (output) => [
@@ -20,6 +21,7 @@ const plugins = (output) => [
     project: './tsconfig.json',
     module: 'ESNext',
     outDir: output,
+    declaration: output === folders.esm,
     include: ['./src/**/*'],
     exclude: ['./src/**/*.spec.*'],
     sourceMap: true,
@@ -28,10 +30,19 @@ const plugins = (output) => [
   visualizer({ filename: `${output}/stats.html`, gzipSize: true, sourcemap: true, template: 'sunburst' }),
 ]
 
-export default {
-  input: {
-    main: 'src/main.ts',
+export default [
+  {
+    input: {
+      main: 'src/main.ts',
+    },
+    output: { dir: folders.esm, format: 'esm', sourcemap: true },
+    plugins: plugins(folders.esm),
   },
-  output: { dir: folders.esm, format: 'esm', sourcemap: true },
-  plugins: plugins(folders.esm, true),
-}
+  {
+    input: {
+      main: 'src/main.ts',
+    },
+    output: { dir: folders.cjs, format: 'cjs', sourcemap: true },
+    plugins: plugins(folders.cjs),
+  },
+]
