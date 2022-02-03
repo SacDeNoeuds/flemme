@@ -1,15 +1,14 @@
 {
-  "name": "formacy",
+  "name": "flemme",
   "version": "0.1.0",
   "description": "Framework-agnostic form manager/handler/abstraction",
-  "module": "esm/main.js",
-  "types": "esm/main.d.ts",
+  "main": "build/cjs/main.js",
+  "module": "build/esm/main.js",
+  "types": "build/esm/main.d.ts",
   "exports": {
     ".": {
-      "import": "./esm"
-    },
-    "./validation": {
-      "import": "./esm/validation.js"
+      "import": "./build/esm/main.js",
+      "require": "./build/cjs/main.js"
     }
   },
   "scripts": {
@@ -56,6 +55,7 @@
     "rollup-plugin-visualizer": "^5.5.4",
     "ts-jest": "^27.1.3",
     "ts-node": "^10.4.0",
+    "type-fest": "^2.11.0",
     "typescript": "^4.5.4"
   },
   "config": {
