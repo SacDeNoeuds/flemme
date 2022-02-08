@@ -12,7 +12,6 @@ Table of contents:
 - [Basic usage](#basic-usage)
 - [Limitations](#limitations)
 - [Demos](#demos)
-  - [Usage with superstruct − Simple login form](#usage-with-superstruct-−-simple-login-form)
 - [API](#api)
   - [`makeLib({ get, set, isEqual, cloneDeep })`](#makelib-get-set-isequal-clonedeep-)
   - [`makeForm<T>({ initial, validate?, validationTriggers? })`](#makeformt-initial-validate-validationtriggers-)
