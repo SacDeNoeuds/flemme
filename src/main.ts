@@ -195,8 +195,7 @@ export const makeLib = <Get extends GetFn, Set extends SetFn, IsEqual extends Is
     }
     const off = (event: FormEvent, listener: () => void) => {
       const proxy = listenerProxies.get(listener)
-      if (!proxy) return
-      listeners[event].splice(listeners[event].indexOf(proxy), 1)
+      listeners[event] = listeners[event].filter((listener) => listener !== proxy)
     }
 
     const restoreInteractionsWhileSubmitting = () => {

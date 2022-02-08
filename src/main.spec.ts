@@ -5,68 +5,74 @@ import { Form, FormEvent, makeLib } from './main'
 
 const makeForm = makeLib({ get, set, isEqual, cloneDeep })
 
-describe('form', () => {
-  // const unhandledCases = [
-  //   ['object with undefined value', undefined, { paths: [undefined, 'name'] }],
-  //   ['array with undefined value', undefined, { paths: [undefined, 0, 1] }],
-  //   ['primitive (string) with populated value', 'John', { paths: [undefined] }],
-  //   ['primitive (string) with empty value', undefined, { paths: [undefined] }],
-  //   ['primitive (number) with populated value', 12, { paths: [undefined] }],
-  //   ['primitive (number) with empty value', undefined, { paths: [undefined] }],
-  //   ['primitive (boolean) with "true" value', true, { paths: [undefined] }],
-  //   ['primitive (boolean) with "false" value', false, { paths: [undefined] }],
-  //   ['primitive (boolean) with empty value', undefined, { paths: [undefined] }],
-  //   ['object of array of primitive (string) with empty value', undefined, { paths: [undefined, 'names', 'names.0', 'names.1'] }],
-  //   ['array of object of primitive (string) with empty value', undefined, { paths: [undefined, '0.name', '1.name'] }],
-  //   ['object of array of object of primitive (string) with empty value', undefined, { paths: [undefined, 'users', 'users.0', 'users.0.name', 'users.1', 'users.1.name'] }],
-  // ]
+// const unhandledCases = [
+//   ['object with undefined value', undefined, { paths: [undefined, 'name'] }],
+//   ['array with undefined value', undefined, { paths: [undefined, 0, 1] }],
+//   ['primitive (string) with populated value', 'John', { paths: [undefined] }],
+//   ['primitive (string) with empty value', undefined, { paths: [undefined] }],
+//   ['primitive (number) with populated value', 12, { paths: [undefined] }],
+//   ['primitive (number) with empty value', undefined, { paths: [undefined] }],
+//   ['primitive (boolean) with "true" value', true, { paths: [undefined] }],
+//   ['primitive (boolean) with "false" value', false, { paths: [undefined] }],
+//   ['primitive (boolean) with empty value', undefined, { paths: [undefined] }],
+//   ['object of array of primitive (string) with empty value', undefined, { paths: [undefined, 'names', 'names.0', 'names.1'] }],
+//   ['array of object of primitive (string) with empty value', undefined, { paths: [undefined, '0.name', '1.name'] }],
+//   ['object of array of object of primitive (string) with empty value', undefined, { paths: [undefined, 'users', 'users.0', 'users.0.name', 'users.1', 'users.1.name'] }],
+// ]
 
+describe.each([
+  // 6 values (at least) for each primitive please.
+  ['number', [-10, 0, 42, 3, 4, 8]],
+  ['date', [new Date('2021-01-01'), new Date('1989-01-01'), new Date('1990-01-01'), new Date('1991-01-01'), new Date('1992-01-01'), new Date('1993-01-01')]],
+  ['string', ['John', '', 'Fred', 'Maryse', 'Christina', 'Jack']],
+  ['boolean', [true, false, true, false, true, false]],
+])('form with values of type "%s"', (primitiveLabel, values) => {
   describe.each([
     [
-      'object of primitive (string)',
+      `object of ${primitiveLabel}`,
       {
         initial: {
-          populated: { name: 'John' },
+          populated: { name: values[0] },
           empty: {},
         },
         paths: [undefined, 'name'],
       },
     ],
     [
-      'array of primitive (string)',
+      `array of ${primitiveLabel}`,
       {
         initial: {
-          populated: ['a', 'b'],
+          populated: [values[0], values[1]],
           empty: [],
         },
         paths: [undefined, '1'],
       },
     ],
     [
-      'object of array of primitive (string)',
+      `object of array of ${primitiveLabel}`,
       {
         initial: {
-          populated: { names: ['John', 'Fred'] },
+          populated: { names: [values[0], values[1]] },
           empty: {},
         },
         paths: [undefined, 'names', 'names.1'],
       },
     ],
     [
-      'array of object of primitive (string)',
+      `array of object of ${primitiveLabel}`,
       {
         initial: {
-          populated: [{ name: 'John' }, { name: 'Fred' }],
+          populated: [{ name: values[0] }, { name: values[1] }],
           empty: [],
         },
         paths: [undefined, '0.name'],
       },
     ],
     [
-      'object of array of object of primitive (string)',
+      `object of array of object of ${primitiveLabel}`,
       {
         initial: {
-          'populated': { users: [{ name: 'John' }, { name: 'Fred' }] },
+          'populated': { users: [{ name: values[0] }, { name: values[1] }] },
           'empty': {},
           'undefined nested array': { users: undefined },
           'empty nested array': { users: [] },
@@ -77,10 +83,10 @@ describe('form', () => {
       },
     ],
     [
-      'array of object of array of primitive (string)',
+      `array of object of array of ${primitiveLabel}`,
       {
         initial: {
-          'populated': [{ names: ['John', 'Doe'] }, { names: ['Fred', 'Aster'] }],
+          'populated': [{ names: [values[0], values[1]] }, { names: [values[2], values[3]] }],
           'empty': [],
           'undefined nested name': [{}],
         },
@@ -112,10 +118,10 @@ describe('form', () => {
       describe.each([
         ['form', { path: undefined, parent: undefined }],
         ['field', { path: deepestPath, parent }],
-      ])('%s-level change', (label, { path, parent }) => {
+      ])('%s-level change …', (label, { path, parent }) => {
         const nextValue = path ? get(nextFormValue, path) : nextFormValue
 
-        describe('update to equal value', () => {
+        describe('… to equal value', () => {
           let form!: Form<any>
           beforeEach(() => {
             form = makeForm({ initial: nextFormValue })
@@ -129,7 +135,7 @@ describe('form', () => {
           if (parent) it('should mark parent as modified', () => expect(form.isModified(parent)).toBe(true))
         })
 
-        describe('update to different value', () => {
+        describe('… to different value', () => {
           let form!: Form<any>
           beforeEach(() => {
             form = makeForm({ initial: initialFormValue })
@@ -141,7 +147,7 @@ describe('form', () => {
         })
       })
 
-      describe('focus', () => {
+      describe('focusing', () => {
         let form!: Form<any>
         const path = deepestPath
         beforeEach(() => {
@@ -156,7 +162,7 @@ describe('form', () => {
         it('should mark form as active', () => expect(form.isActive()).toBe(true))
         if (parent) it('should mark parent as active', () => expect(form.isActive(parent)).toBe(true))
 
-        describe('then blur', () => {
+        describe('then blurring', () => {
           beforeEach(() => form.blur(path))
           it('should still mark field as visited', () => expect(form.isVisited(path)).toBe(true))
           it('should still mark form as visited', () => expect(form.isVisited()).toBe(true))
@@ -166,45 +172,49 @@ describe('form', () => {
           it('should mark form as inactive', () => expect(form.isActive()).toBe(false))
           if (parent) it('should mark parent as inactive', () => expect(form.isActive(parent)).toBe(false))
         })
+
+        describe('then resetting field', () => {
+          beforeEach(() => form.reset(path))
+          it('should mark field as inactive', () => expect(form.isActive(path)).toBe(false))
+        })
       })
 
-      describe('reset form', () => {
+      describe.each([
+        ['initial value', undefined],
+        ['new initial value', nextFormValue],
+      ])('reset form to %s', (_label, nextInitialFormValue) => {
         let form!: Form<any>
+        const initial = nextInitialFormValue ?? initialFormValue
         beforeEach(() => {
           form = makeForm({ initial: initialFormValue })
           form.change(nextFormValue)
+          form.resetForm(nextInitialFormValue)
         })
 
-        describe.each([
-          ['initial value', undefined],
-          ['new initial value', nextFormValue],
-        ])('reset to %s', (_label, nextInitialFormValue) => {
-          const initial = nextInitialFormValue ?? initialFormValue
-          beforeEach(() => form.resetForm(nextInitialFormValue))
-
-          it.each(paths)('should have correct initial value with path %s', (path) => expect(form.initial(path)).toEqual(path ? get(initial, path) : initial))
-          it.each(paths)('should have correct value with path %s', (path) => expect(form.value(path)).toEqual(path ? get(initial, path) : initial))
-          it('should have no errors', () => expect(form.errors()).toBe(undefined))
-          it('should not be active', () => expect(form.isActive()).toBe(false))
-          it('should not be dirty', () => expect(form.isDirty()).toBe(false))
-          it('should not be modified', () => expect(form.isModified()).toBe(false))
-          it('should not be visited', () => expect(form.isVisited()).toBe(false))
-          it('should be valid', () => expect(form.isValid()).toBe(true))
-        })
+        it.each(paths)('should have correct initial value with path %s', (path) => expect(form.initial(path)).toEqual(path ? get(initial, path) : initial))
+        it.each(paths)('should have correct value with path %s', (path) => expect(form.value(path)).toEqual(path ? get(initial, path) : initial))
+        it('should have no errors', () => expect(form.errors()).toBe(undefined))
+        it('should not be active', () => expect(form.isActive()).toBe(false))
+        it('should not be dirty', () => expect(form.isDirty()).toBe(false))
+        it('should not be modified', () => expect(form.isModified()).toBe(false))
+        it('should not be visited', () => expect(form.isVisited()).toBe(false))
+        it('should be valid', () => expect(form.isValid()).toBe(true))
       })
 
       describe('reset field', () => {
         const path = deepestPath // string field
         const initialFormValue = nextFormValue
+        const otherValue = values.slice(-2)[0]
+        const otherInitialValue = values.slice(-1)[0]
         let form!: Form<any>
         beforeEach(() => {
           form = makeForm({ initial: initialFormValue })
-          form.change(path, 'Christina')
+          form.change(path, otherValue)
         })
 
         describe.each([
-          // ['initial value', undefined],
-          ['new initial value', 'Maryse'],
+          ['initial value', undefined],
+          ['new initial value', otherInitialValue],
         ])('reset to %s', (_label, nextFieldInitialValue) => {
           const nextInitial = cloneDeep(initialFormValue)
           if (nextFieldInitialValue) set(nextInitial, path, nextFieldInitialValue)
@@ -234,7 +244,7 @@ describe('form', () => {
       const succeed = jest.fn(() => undefined)
       const initial = options.initial.populated
 
-      it('should be valid by default at initialisation', () => expect(makeForm({ initial, validate: fail }).isValid()).toBe(true))
+      it('form should be valid by default at initialisation', () => expect(makeForm({ initial, validate: fail }).isValid()).toBe(true))
 
       describe('with valid value', () => {
         let form!: Form<any>
@@ -255,50 +265,57 @@ describe('form', () => {
         it('should have errors', () => expect(form.errors()).toEqual(errors))
         it('should be invalid', () => expect(form.isValid()).toBe(false))
       })
+
+      describe('validationTriggers utility', () => {
+        const validate = jest.fn()
+        beforeEach(() => {
+          const form = makeForm({ initial: options.initial.empty, validate, validationTriggers: ['change'] })
+          form.change(options.initial.populated)
+        })
+        it('should have triggered validate function', () => expect(validate).toHaveBeenCalledTimes(1))
+      })
     })
 
-    describe('events', () => {
+    describe.each([
+      ['change', { formTrigger: (form: any) => form.change(options.initial.empty), fieldTrigger: (form: any) => form.change(deepestPath, values.slice(-1)[0]) }],
+      ['blur', { formTrigger: undefined, fieldTrigger: (form: any) => form.blur(deepestPath) }],
+      ['focus', { formTrigger: undefined, fieldTrigger: (form: any) => form.focus(deepestPath) }],
+      ['reset', { formTrigger: (form: any) => form.resetForm(), fieldTrigger: (form: any) => form.reset(deepestPath) }],
+      ['validated', { formTrigger: (form: any) => form.validate(), fieldTrigger: undefined }],
+    ])('listening to event %s', (formEvent_, { formTrigger, fieldTrigger }) => {
       const initial = options.initial.populated
-      const path = deepestPath
-      let form!: Form<any>
-      beforeEach(() => {
-        form = makeForm({ initial })
-      })
-      describe.each([
-        ['change', { formTrigger: () => form.change(options.initial.empty), fieldTrigger: () => form.change(path, 'Maryse') }],
-        ['blur', { formTrigger: undefined, fieldTrigger: () => form.blur(path) }],
-        ['focus', { formTrigger: undefined, fieldTrigger: () => form.focus(path) }],
-        ['reset', { formTrigger: () => form.resetForm(), fieldTrigger: () => form.reset(path) }],
-        ['validated', { formTrigger: () => form.validate(), fieldTrigger: undefined }],
-      ])('%s', (formEvent_, { formTrigger, fieldTrigger }) => {
-        const formEvent = formEvent_ as FormEvent
-        const cases = [
-          ['form-level event', { trigger: formTrigger, path: undefined }],
-          ['field-level event', { trigger: fieldTrigger, path }],
-          ['field-level event registered on form', { trigger: fieldTrigger, path: undefined }],
-          ['field-level event registered on parent', { trigger: fieldTrigger, path: parent ?? null }],
-        ].filter(([, { trigger, path }]: any) => trigger && path !== null) as Array<[string, { trigger: () => void; path: string | undefined }]>
-        describe.each(cases)('%s', (_label, { trigger, path }) => {
-          const listener = jest.fn()
-          beforeEach(() => (path ? form.on(path, formEvent, listener) : form.on(formEvent, listener)))
+      const formEvent = formEvent_ as FormEvent
+      const cases = [
+        ['at field-level with form-level trigger', { trigger: formTrigger, path: undefined }],
+        ['at field-level with field-level trigger', { trigger: fieldTrigger, path: deepestPath }],
+        ['at form-level with field-level trigger', { trigger: fieldTrigger, path: undefined }],
+        ['at parent-level with field-level trigger', { trigger: fieldTrigger, path: parent ?? null }],
+      ].filter(([, { trigger, path }]: any) => trigger && path !== null) as Array<[string, { trigger: (form: any) => void; path: string | undefined }]>
 
-          it('should trigger listener', () => {
-            trigger()
-            expect(listener).toHaveBeenCalledTimes(1)
-          })
+      describe.each(cases)('%s', (_label, { trigger, path }) => {
+        const listener = jest.fn()
+        let form!: Form<any>
+        beforeEach(() => {
+          form = makeForm({ initial })
+          path ? form.on(path, formEvent, listener) : form.on(formEvent, listener)
+        })
 
-          it('should not trigger listener', () => {
-            trigger()
-            form.off(formEvent, listener)
-            trigger()
-            expect(listener).toHaveBeenCalledTimes(1)
-          })
+        it('should trigger listener', () => {
+          trigger(form)
+          expect(listener).toHaveBeenCalledTimes(1)
+        })
+
+        it('should not trigger listener', () => {
+          trigger(form)
+          form.off(formEvent, listener)
+          trigger(form)
+          expect(listener).toHaveBeenCalledTimes(1)
         })
       })
     })
 
-    describe('submit', () => {
-      describe('with invalid form', () => {
+    describe('submitting', () => {
+      describe('an invalid form', () => {
         const initial = options.initial.populated
         const handler = jest.fn(() => Promise.resolve())
         const errors = [{ code: 'error_1' }, { code: 'error_2' }]
@@ -312,9 +329,11 @@ describe('form', () => {
         })
         it('should reject', () => expect(submitPromise).rejects.toThrow(/invalid form data/))
         it('should not call handler', () => expect(handler).not.toHaveBeenCalled())
+        it.each(paths)('should mark every field %s as modified', (path) => expect(form.isModified(path)).toBe(true))
+        it.each(paths)('should mark every field %s as visited', (path) => expect(form.isVisited(path)).toBe(true))
       })
 
-      describe('with valid form', () => {
+      describe('a valid form', () => {
         const initial = options.initial.empty
         const nextFormValue = options.initial.populated
         const resolved = 'toto'
@@ -328,7 +347,7 @@ describe('form', () => {
           submitPromise = form.submit(handler)
           await submitPromise
         })
-        it('should validate form', async () => expect(validate).toHaveBeenCalledTimes(1))
+        it('should validate form', () => expect(validate).toHaveBeenCalledTimes(1))
         it('should resolve to void', () => expect(submitPromise).resolves.toBe(undefined))
         it('should call handler', () => expect(handler).toHaveBeenCalledWith(form.value()))
 
@@ -343,6 +362,23 @@ describe('form', () => {
           expect(form.isVisited()).toBe(false)
           expect(form.isValid()).toBe(true)
         })
+      })
+
+      describe('and interacting with form _while_ submitting', () => {
+        jest.useFakeTimers()
+        let form!: Form<any>
+        const newValue = 'new value'
+        const handler = jest.fn(() => new Promise((resolve) => setTimeout(resolve, 1000)))
+        beforeEach(async () => {
+          form = makeForm({ initial: options.initial.empty })
+          form.submit(handler).catch(() => void 0)
+          form.focus(deepestPath) // sets field as visited
+          form.change(deepestPath, newValue)
+          jest.runAllTimers()
+        })
+
+        it('should restore modification after submit', () => expect(form.value(deepestPath)).toEqual(newValue))
+        it('should restore focused field as visited', () => expect(form.isVisited(deepestPath)).toBe(true))
       })
     })
   })
