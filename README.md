@@ -257,7 +257,7 @@ const makeForm: <T, ValidationErrors>(options: {
 #### `form.initial(path?)`
 
 ```ts
-interface FormInitial<T> {
+interface Initial<T> {
   initial(): PartialDeep<T> | undefined
   initial<P extends string>(path: P): PartialDeep<Get<T, P>> // strongly typed: value will be inferred from path
 }
@@ -271,7 +271,7 @@ form.initial('user.name') // initial sub value
 #### `form.value(path?)`
 
 ```ts
-interface FormValue<T> {
+interface Value<T> {
   value(): PartialDeep<T> | undefined
   value<P extends string>(path: P): PartialDeep<Get<T, P>> // strongly typed: value will be inferred from path
 }
@@ -337,7 +337,7 @@ form.isActive('user.name') // check if user.name.first OR user.name.last has foc
 #### `form.change(formValue)` / `form.change(path, value)`
 
 ```ts
-interface FormChange<T> {
+interface Change<T> {
   change(value: T | undefined): void
   change<P extends string>(
     path: P,
@@ -438,7 +438,7 @@ form.focus('user.name.last')
 **NB:** The `path` is not relevant for `'validated'` event
 
 ```ts
-interface FormOn {
+interface On {
   on(
     event: 'change' | 'blur' | 'focus' | 'reset' | 'validated',
     listener: () => void,
