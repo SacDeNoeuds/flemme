@@ -4,6 +4,7 @@ import { get, set, isEqual, cloneDeep } from 'lodash'
 import { Form, FormEvent, makeLib } from './main'
 
 const makeForm = makeLib({ get, set, isEqual, cloneDeep })
+jest.useFakeTimers()
 
 // const unhandledCases = [
 //   ['object with undefined value', undefined, { paths: [undefined, 'name'] }],
@@ -174,7 +175,7 @@ describe.each([
         })
 
         describe('then resetting field', () => {
-          beforeEach(() => form.reset(path))
+          beforeEach(() => form.resetAt(path))
           it('should mark field as inactive', () => expect(form.isActive(path)).toBe(false))
         })
       })
@@ -188,7 +189,7 @@ describe.each([
         beforeEach(() => {
           form = makeForm({ initial: initialFormValue })
           form.change(nextFormValue)
-          form.resetForm(nextInitialFormValue)
+          form.reset(nextInitialFormValue)
         })
 
         it.each(paths)('should have correct initial value with path %s', (path) => expect(form.initial(path)).toEqual(path ? get(initial, path) : initial))
@@ -218,7 +219,7 @@ describe.each([
         ])('reset to %s', (_label, nextFieldInitialValue) => {
           const nextInitial = cloneDeep(initialFormValue)
           if (nextFieldInitialValue) set(nextInitial, path, nextFieldInitialValue)
-          beforeEach(() => (nextFieldInitialValue ? form.reset(path, nextFieldInitialValue) : form.reset(path)))
+          beforeEach(() => (nextFieldInitialValue ? form.resetAt(path, nextFieldInitialValue) : form.resetAt(path)))
 
           it.each(paths)('should have correct initial value with path %s', (path) => expect(form.initial(path)).toEqual(path ? get(nextInitial, path) : nextInitial))
           it.each(paths)('should have correct value with path %s', (path) => expect(form.value(path)).toEqual(path ? get(nextInitial, path) : nextInitial))
@@ -276,12 +277,13 @@ describe.each([
       })
     })
 
+    type F = Form<any>
     describe.each([
-      ['change', { formTrigger: (form: any) => form.change(options.initial.empty), fieldTrigger: (form: any) => form.change(deepestPath, values.slice(-1)[0]) }],
-      ['blur', { formTrigger: undefined, fieldTrigger: (form: any) => form.blur(deepestPath) }],
-      ['focus', { formTrigger: undefined, fieldTrigger: (form: any) => form.focus(deepestPath) }],
-      ['reset', { formTrigger: (form: any) => form.resetForm(), fieldTrigger: (form: any) => form.reset(deepestPath) }],
-      ['validated', { formTrigger: (form: any) => form.validate(), fieldTrigger: undefined }],
+      ['change', { formTrigger: (form: F) => form.change(options.initial.empty), fieldTrigger: (form: F) => form.change(deepestPath, values.slice(-1)[0]) }],
+      ['blur', { formTrigger: undefined, fieldTrigger: (form: F) => form.blur(deepestPath) }],
+      ['focus', { formTrigger: undefined, fieldTrigger: (form: F) => form.focus(deepestPath) }],
+      ['reset', { formTrigger: (form: F) => form.reset(), fieldTrigger: (form: F) => form.resetAt(deepestPath) }],
+      ['validated', { formTrigger: (form: F) => form.validate(), fieldTrigger: undefined }],
     ])('listening to event %s', (formEvent_, { formTrigger, fieldTrigger }) => {
       const initial = options.initial.populated
       const formEvent = formEvent_ as FormEvent
@@ -290,7 +292,7 @@ describe.each([
         ['at field-level with field-level trigger', { trigger: fieldTrigger, path: deepestPath }],
         ['at form-level with field-level trigger', { trigger: fieldTrigger, path: undefined }],
         ['at parent-level with field-level trigger', { trigger: fieldTrigger, path: parent ?? null }],
-      ].filter(([, { trigger, path }]: any) => trigger && path !== null) as Array<[string, { trigger: (form: any) => void; path: string | undefined }]>
+      ].filter(([, { trigger, path }]: any) => trigger && path !== null) as Array<[string, { trigger: (form: F) => void; path: string | undefined }]>
 
       describe.each(cases)('%s', (_label, { trigger, path }) => {
         const listener = jest.fn()
@@ -364,12 +366,16 @@ describe.each([
         })
       })
 
-      describe('and interacting with form _while_ submitting', () => {
-        jest.useFakeTimers()
+      describe.each([
+        ['succeeds', Promise.resolve('OK')],
+        ['fails', Promise.reject(new Error('Ouch'))],
+      ])('and interacting with form _while_ submitting when submit %s', (_, submitResponse) => {
         let form!: Form<any>
-        const newValue = 'new value'
-        const handler = jest.fn(() => new Promise((resolve) => setTimeout(resolve, 1000)))
+        const newValue = values.slice(-1)[0]
+        const handler = jest.fn()
+
         beforeEach(async () => {
+          handler.mockImplementation(() => new Promise((resolve) => setTimeout(() => resolve(submitResponse), 1000)))
           form = makeForm({ initial: options.initial.empty })
           form.submit(handler).catch(() => void 0)
           form.focus(deepestPath) // sets field as visited

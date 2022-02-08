@@ -4,14 +4,14 @@ import type { Get, PartialDeep } from 'type-fest'
 import { some, removeBy } from './lib/iterable'
 
 export type GetFn = (target: any, path: string, defaultValue?: any) => any
-export type SetFn = (target: any, path: string, value?: any) => void
+export type SetFn = (target: any, path: string, value: any) => void
 export type IsEqualFn = (a: any, b: any) => boolean
-export type CloneDeep = <T>(value: T) => T
-export type MakeLibParams<Get extends GetFn, Set extends SetFn, IsEqual extends IsEqualFn> = {
-  get: Get
-  set: Set
-  isEqual: IsEqual
-  cloneDeep: CloneDeep
+export type CloneDeepFn = <T>(value: T) => T
+export type MakeLibParams = {
+  get: GetFn
+  set: SetFn
+  isEqual: IsEqualFn
+  cloneDeep: CloneDeepFn
 }
 
 export const formEvents = ['change', 'blur', 'focus', 'reset', 'validated'] as const
@@ -39,8 +39,8 @@ export type Form<T, ValidationErrors = any> = {
   change(value: T | undefined): void
   change<P extends Path>(path: P, value: PartialDeep<Get<T, P>> | undefined): void
 
-  resetForm(value?: T): void
-  reset<P extends Path>(path: P, value?: PartialDeep<Get<T, P>>): void
+  reset(nextInitialValue?: T): void
+  resetAt<P extends Path>(path: P, nextInitialValue?: PartialDeep<Get<T, P>>): void
 
   blur(path: Path): void
   focus(path: Path): void
@@ -70,7 +70,7 @@ type MakeFormOptions<T, ValidationErrors> = {
 }
 type MakeForm = <T, ValidationErrors = any>(options: MakeFormOptions<T, ValidationErrors>) => Form<T, ValidationErrors>
 
-export const makeLib = <Get extends GetFn, Set extends SetFn, IsEqual extends IsEqualFn>({ get, set, isEqual, cloneDeep }: MakeLibParams<Get, Set, IsEqual>): MakeForm => {
+export const makeLib = ({ get, set, isEqual, cloneDeep }: MakeLibParams): MakeForm => {
   const makeForm = <T, ValidationErrors>({ initial, validate = () => undefined, validationTriggers = [] }: MakeFormOptions<T, ValidationErrors>): Form<T, ValidationErrors> => {
     // readers
     let initialValue = cloneDeep(initial)
@@ -125,7 +125,7 @@ export const makeLib = <Get extends GetFn, Set extends SetFn, IsEqual extends Is
         if (submitted) visitedWhileSubmitting.add(path)
         emit('focus', path)
       },
-      resetForm: (nextInitial: any = initialValue) => {
+      reset: (nextInitial: any = initialValue) => {
         initialValue = cloneDeep(nextInitial)
         value = cloneDeep(nextInitial)
         submitted = false
@@ -136,7 +136,7 @@ export const makeLib = <Get extends GetFn, Set extends SetFn, IsEqual extends Is
         emit('reset', undefined)
       },
       // reset: (path: PathShape, value: any = nothing) => {
-      reset: (...args: any[]) => {
+      resetAt: (...args: any[]) => {
         const [path, fieldValue] = args
         const hasValue = args.length === 2
         if (hasValue) set(initialValue, path, fieldValue)
@@ -158,9 +158,9 @@ export const makeLib = <Get extends GetFn, Set extends SetFn, IsEqual extends Is
         submitted = true
         form.validate()
         if (!form.isValid()) throw new Error('invalid form data')
-        await handler(form.value() as T)
-        form.resetForm(form.value())
-        restoreInteractionsWhileSubmitting()
+        return handler(form.value() as T)
+          .then(() => form.reset(form.value()))
+          .finally(() => restoreInteractionsWhileSubmitting())
       },
       validate: () => {
         errors = validate(value)
