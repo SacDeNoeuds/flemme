@@ -1,4 +1,3 @@
-import type { O } from 'ts-toolbelt'
 import { get, set, isEqual, cloneDeep } from 'lodash'
 import { makeLib } from './main'
 
@@ -14,13 +13,10 @@ export type User = {
     hair: Array<{ color: HairColor; ratio: number }>
   }
 }
-export type UserPaths = O.Paths<User>
-// export type Test = O.Path<User, ['meta', 'eye', 1, '']>
-// const userPath: UserPaths = ['meta', 'eye', 1, 'color']
-export const userForm = makeForm<User>({})
+export const userForm = makeForm<User>({ initial: {} })
+export const usersForm = makeForm<User[]>({ initial: [] })
 
-// userForm.on('change', () => {})
-// userForm.on('meta.eye', 'change', () => {})
-// userForm.change('meta.eye', [{ color: 'blue' }])
-// userForm.isDirty('meta.eye')
-// userForm.on('change', () => {})
+userForm.on('change', () => console.log('form changed'))
+userForm.on('meta.eye', 'change', () => console.log('meta.eye changed'))
+userForm.change('meta.eye', [{ color: 'blue' }])
+console.log(userForm.isDirty('meta.eye'))

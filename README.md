@@ -12,6 +12,10 @@ Framework-agnostic form management
 npm i -D formacy
 ```
 
+## Limitations
+
+The top-level value _must_ be an object or an array
+
 ## Guides
 
 ### Simple login form

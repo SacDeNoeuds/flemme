@@ -14,7 +14,8 @@ export type MakeLibParams<Get extends GetFn, Set extends SetFn, IsEqual extends 
   cloneDeep: CloneDeep
 }
 
-export type FormEvent = 'change' | 'blur' | 'focus' | 'reset' | 'validated'
+export const formEvents = ['change', 'blur', 'focus', 'reset', 'validated'] as const
+export type FormEvent = typeof formEvents[number]
 type Listener = (path: string | undefined) => void
 
 type Validate<E, T> = (value: PartialDeep<T> | undefined) => E | undefined
@@ -29,17 +30,10 @@ export type Form<T, ValidationErrors = any> = {
   value(): T | undefined
   value<P extends string>(path: P): PartialDeep<Get<T, P>>
 
-  isDirty(): boolean
-  isDirty(path: Path): boolean
-
-  isModified(): boolean
-  isModified(path: Path): boolean
-
-  isVisited(): boolean
-  isVisited(path: Path): boolean
-
-  isActive(): boolean
-  isActive(path: Path): boolean
+  isDirty(path?: Path): boolean
+  isModified(path?: Path): boolean
+  isVisited(path?: Path): boolean
+  isActive(path?: Path): boolean
 
   // actions/operations
   change(value: T | undefined): void
@@ -58,9 +52,10 @@ export type Form<T, ValidationErrors = any> = {
   off(event: FormEvent, listener: () => void): void
 
   // form actions/operations:
-  /**
+  /** Submit:
    * 1. Set all paths as modified & visited
    * 2. Reset after success
+   * 3. Restore user action performed while submitting if some
    */
   submit(handler: (value: T) => Promise<any>): Promise<void>
   validate(): void
@@ -69,25 +64,28 @@ export type Form<T, ValidationErrors = any> = {
 }
 
 type MakeFormOptions<T, ValidationErrors> = {
-  initial?: PartialDeep<T>
+  initial: PartialDeep<T>
   validate?: Validate<ValidationErrors, T>
   validationTriggers?: Exclude<FormEvent, 'validated'>[]
 }
 type MakeForm = <T, ValidationErrors = any>(options: MakeFormOptions<T, ValidationErrors>) => Form<T, ValidationErrors>
 
 export const makeLib = <Get extends GetFn, Set extends SetFn, IsEqual extends IsEqualFn>({ get, set, isEqual, cloneDeep }: MakeLibParams<Get, Set, IsEqual>): MakeForm => {
-  const makeForm = <T, ValidationErrors>({
-    initial = undefined,
-    validate = () => undefined,
-    validationTriggers = [],
-  }: MakeFormOptions<T, ValidationErrors>): Form<T, ValidationErrors> => {
-    let initialValue = cloneDeep(initial ?? ({} as any))
-    let errors: ValidationErrors | undefined
+  const makeForm = <T, ValidationErrors>({ initial, validate = () => undefined, validationTriggers = [] }: MakeFormOptions<T, ValidationErrors>): Form<T, ValidationErrors> => {
+    // readers
+    let initialValue = cloneDeep(initial)
+    let value = cloneDeep(initialValue)
     const modified = new Set<string>()
+    const modificationsWhileSubmitting = new Map<string, any>()
     const visited = new Set<string>()
+    const visitedWhileSubmitting = new Set<string>()
     let submitted = false
     let active: string | undefined = undefined
-    let value = cloneDeep(initialValue ?? ({} as any))
+
+    // validation
+    let errors: ValidationErrors | undefined = undefined
+
+    // events
     const listeners: Record<FormEvent, Listener[]> = {
       blur: [],
       change: [],
@@ -103,16 +101,16 @@ export const makeLib = <Get extends GetFn, Set extends SetFn, IsEqual extends Is
       initial: (path?: Path): any => (path === undefined ? initialValue : get(initialValue, path)),
       value: (path?: Path): any => (path === undefined ? value : get(value, path)),
       isDirty: (path?: Path) => !isEqual(form.value(path as any), form.initial(path as any)),
-      isActive: (path?: Path) => (path ? !!active?.includes(path) : !!active),
+      isActive: (path?: Path) => (path ? !!active?.startsWith(path) : !!active),
       isModified: (path?: Path) => {
         if (submitted) return true
         if (!path) return modified.size > 0
-        return some(modified, (subpath) => subpath.includes(path))
+        return some(modified, (subpath) => subpath.startsWith(path))
       },
       isVisited: (path?: Path) => {
         if (submitted) return true
-        if (!path) return modified.size > 0
-        return some(visited, (subpath) => subpath.includes(path))
+        if (!path) return visited.size > 0
+        return some(visited, (subpath) => subpath.startsWith(path))
       },
 
       // actions/operations
@@ -124,26 +122,30 @@ export const makeLib = <Get extends GetFn, Set extends SetFn, IsEqual extends Is
       focus: (path: Path) => {
         active = path
         visited.add(path)
+        if (submitted) visitedWhileSubmitting.add(path)
         emit('focus', path)
       },
-      resetForm: (nextInitial?: any) => {
+      resetForm: (nextInitial: any = initialValue) => {
         initialValue = cloneDeep(nextInitial)
         value = cloneDeep(nextInitial)
         submitted = false
         modified.clear()
         visited.clear()
+        errors = undefined
         active = undefined
         emit('reset', undefined)
       },
       // reset: (path: PathShape, value: any = nothing) => {
       reset: (...args: any[]) => {
-        const [path, value] = args
+        const [path, fieldValue] = args
         const hasValue = args.length === 2
-        removeBy(modified, (value) => value.includes(path))
-        removeBy(visited, (value) => value.includes(path))
+        if (hasValue) set(initialValue, path, fieldValue)
+        set(value, path, get(initialValue, path))
+
+        removeBy(modified, (value) => value.startsWith(path))
+        removeBy(visited, (value) => value.startsWith(path))
         submitted = false
-        if (active?.includes(path)) active = undefined
-        set(value, path, hasValue ? value : get(initialValue, path))
+        if (active?.startsWith(path)) active = undefined
         emit('reset', path)
       },
 
@@ -158,6 +160,7 @@ export const makeLib = <Get extends GetFn, Set extends SetFn, IsEqual extends Is
         if (!form.isValid()) throw new Error('invalid form data')
         await handler(form.value() as T)
         form.resetForm(form.value())
+        restoreInteractionsWhileSubmitting()
       },
       validate: () => {
         errors = validate(value)
@@ -168,12 +171,14 @@ export const makeLib = <Get extends GetFn, Set extends SetFn, IsEqual extends Is
     }
 
     const changeForm = (nextValue: any) => {
-      value = nextValue
+      value = cloneDeep(nextValue)
+      modified.add('')
       emit('change', undefined)
     }
     const changeField = (path: string, nextValue: any) => {
       set(value, path, nextValue)
-      console.info('emit change', path, nextValue, value)
+      modified.add(path)
+      if (submitted) modificationsWhileSubmitting.set(path, nextValue)
       emit('change', path)
     }
     const onForm = (event: FormEvent, listener: () => void) => {
@@ -183,7 +188,7 @@ export const makeLib = <Get extends GetFn, Set extends SetFn, IsEqual extends Is
     }
     const onField = (path: string, event: FormEvent, listener: () => void) => {
       const proxy: Listener = (emittedPath: string | undefined) => {
-        if (!emittedPath || emittedPath.includes(path)) listener()
+        if (!emittedPath || emittedPath.startsWith(path)) listener()
       }
       listenerProxies.set(listener, proxy)
       listeners[event].push(proxy)
@@ -192,6 +197,13 @@ export const makeLib = <Get extends GetFn, Set extends SetFn, IsEqual extends Is
       const proxy = listenerProxies.get(listener)
       if (!proxy) return
       listeners[event].splice(listeners[event].indexOf(proxy), 1)
+    }
+
+    const restoreInteractionsWhileSubmitting = () => {
+      visitedWhileSubmitting.forEach((path) => visited.add(path))
+      visitedWhileSubmitting.clear()
+      modificationsWhileSubmitting.forEach((value, path) => form.change(path, value))
+      modificationsWhileSubmitting.clear()
     }
 
     validationTriggers.forEach((event) => {
