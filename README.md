@@ -4,11 +4,15 @@ Hopefully − the cure to (complex) forms
 
 Framework-agnostic form management
 
+---
+
+Table of contents:
+
 - [Getting started](#getting-started)
   - [Installation](#installation)
 - [Basic usage](#basic-usage)
 - [Limitations](#limitations)
-- [Guides](#guides)
+- [Demos](#demos)
   - [Usage with superstruct − Simple login form](#usage-with-superstruct-−-simple-login-form)
 - [API](#api)
   - [`makeLib({ get, set, isEqual, cloneDeep })`](#makelib-get-set-isequal-clonedeep-)
@@ -32,9 +36,7 @@ Framework-agnostic form management
     - [`form.isValid()`](#formisvalid)
     - [`submit(handler)`](#submithandler)
 
-## Getting started
-
-### Installation
+## Installation
 
 ```sh
 npm i -D flemme
@@ -74,7 +76,7 @@ export const makeForm = makeLib({
 <summary>With MoutJS</summary>
 
 ```ts
-// src/lib/flemme.(ts|js)
+// src/lib/form.(ts|js)
 import { makeLib } from 'flemme'
 import mout from 'mout'
 
@@ -113,18 +115,22 @@ const makeForm = makeLib({
 
 ```ts
 // src/path/to/user-form.(js|ts)
-const validateUserProfileForm = (value) => {
-  const errors = [] // or a set, an object, your own error shape ; who am I to tell you what data type to use ?
-  if (!value.name)
-  return errors.length === 0
-    ? undefined // IMPORTANT: that's how the lib knows the form is valid
-    : errors
-}
+import { makeForm } from 'path/to/lib/form'
+
 export const makeUserProfileForm = (initialValue) => makeForm({
   initial: initialValue,
   validate: validateUserProfileForm,
   validationTriggers: ['change', 'blur', 'focus', 'reset', 'validated'], // all available triggers, pick only a subset of course (ideally one only)
 })
+
+const validateUserProfileForm = (value) => {
+  const errors = [] // not necessarily an array, the data type of your choice ; who am I to tell you what data type best suits your need ?
+
+  if (!value.name) errors.push({ code: 'name is required' })
+  return errors.length === 0
+    ? undefined // IMPORTANT: that's how the lib knows the form is valid
+    : errors
+}
 
 const form = makeUserProfileForm({
   name: { first: 'John', last: 'Doe' },
@@ -146,10 +152,10 @@ form.change('tags.1', 'great dancer') // replaces "great dude" by "great dancer"
 form.blur('tags.1')
 
 // Handle array additions & deletion at array-level
-// Avoid using form.change('tags.2', 'Kind hearted')
+// Avoid using form.change('tags.2', 'Kind hearted') to append a value
 form.change('tags', [...form.value('tags'), 'Kind hearted'])
 
-form.submit(async (values) => { await '…' })
+form.submit(async (values) => { await fetch('…', {}) })
   .then(() => {…})
   .catch(() => {…})
 ```
@@ -158,14 +164,14 @@ form.submit(async (values) => { await '…' })
 
 :warning: The top-level value _must_ be an object or an array
 
-## Guides
+## Demos
 
 - [With `superstruct` validation](/?go-to=_)
 - [With `yup` validation](/?go-to=_)
 - [With `zod` validation](/?go-to=_)
 - [With React](/?go-to=_)
 
-### Usage with superstruct − Simple login form
+<!-- ### Usage with superstruct − Simple login form
 
 ```ts
 import { Form, form, object, string, InferValue } from 'flemme'
@@ -219,7 +225,7 @@ const mimicActualUserActions = async () => {
     …
   }
 }
-```
+``` -->
 
 ## API
 
@@ -429,6 +435,8 @@ form.focus('user.name.last')
 
 #### `form.on(event, listener)` / `form.on(path, event, listener)`
 
+**NB:** The `path` is not relevant for `'validated'` event
+
 ```ts
 interface FormOn {
   on(
@@ -458,8 +466,6 @@ form.on('validated', () => console.log('Form has been validated'))
 form.on('user.name', 'validated' () => console.log('form has been validated'))
 form.on('user.name.first', 'validated' () => console.log('form has been validated'))
 ```
-
-**NB:** The `path` is not relevant for `'validated'` event
 
 #### `form.off(event, listener)`
 
@@ -514,6 +520,8 @@ if (!form.isValid()) {
 
 #### `submit(handler)`
 
+**NB:** Under the hood, it validates the form − if a `validate` function was provided −, and executes the handler **only** if the form is valid.
+
 ```ts
 export type Submit<T> = (handler: (value: T) => Promise<any>) => Promise<void>
 
@@ -529,5 +537,3 @@ await form.submit(async (values) => {
   if (!response.ok) throw new Error('Received an error')
 })
 ```
-
-**NB:** Under the hood, it validates the form − if a `validate` function was provided −, and executes the handler **only** if the form is valid.
