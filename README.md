@@ -8,8 +8,7 @@ Framework-agnostic form management
 
 Table of contents:
 
-- [Getting started](#getting-started)
-  - [Installation](#installation)
+- [Installation](#installation)
 - [Basic usage](#basic-usage)
 - [Limitations](#limitations)
 - [Demos](#demos)
@@ -42,7 +41,7 @@ Table of contents:
 npm i -D flemme
 ```
 
-:warning: For TS users: Enabling proper types requires TS v4.1+ and type-fest v0.21+
+:warning: **For TS users**: Enabling proper types requires TS v4.1+ and type-fest v0.21+
 
 Then create a file to initialise the lib. Since I don’t want to enforce lib choices but I still need classic functions, you’ll have to inject into the lib:
 
