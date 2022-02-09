@@ -6,19 +6,19 @@ const cp = require('child_process')
 const path = require('path')
 
 const paths = {
-  dist: () => path.resolve(__dirname, './dist'),
-  folder: (folder) => path.resolve(__dirname, folder),
+  output: () => path.resolve(__dirname, './dist'),
+  folder: (folder) => path.resolve(__dirname, 'demo', folder),
 }
-fs.rmSync(paths.dist(), { recursive: true, force: true })
-fs.mkdirSync(paths.dist())
+fs.rmSync(paths.output(), { recursive: true, force: true })
+fs.mkdirSync(paths.output())
 
 const folders = ['with-react', 'with-superstruct', 'with-yup', 'with-zod']
 folders.forEach((folder) => {
-  cp.execSync(`cp -R ${paths.folder(folder)}/dist ${paths.dist()}/${folder}`)
+  cp.execSync(`cp -R ${paths.folder(folder)}/dist ${paths.output()}/${folder}`)
 })
 
 gh.publish(
-  'dist',
+  paths.output(),
   {
     branch: 'pages',
     message: 'Deploy demos',
