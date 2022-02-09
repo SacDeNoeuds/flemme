@@ -23,7 +23,8 @@ gh.publish(
     branch: 'pages',
     message: 'Deploy demos',
   },
-  (error) => {
-    console.error('deploy failed:', error)
+  (err) => {
+    console.error('deploy failed')
+    console.error(err)
   },
 )
