@@ -4,18 +4,18 @@ React bindings for `flemme`
 
 ## Table of contents
 
-- [Table of contents](#table-of-contents)
-- [API](#api)
-  - [`<UseField form={…} path={…} watchers?={…} />`](#usefield-form-path-watchers-)
-  - [`<UseFieldArray form={…} path={…} watchers?={…} />`](#usefieldarray-form-path-watchers-)
-  - [`useValue(form, path?)`](#usevalueform-path)
-  - [`useInitial(form, path?)`](#useinitialform-path)
-  - [`useDirty(form, path?)`](#usedirtyform-path)
-  - [`useModified(form, path?)`](#usemodifiedform-path)
-  - [`useVisited(form, path?)`](#usevisitedform-path)
-  - [`useActive(form, path?)`](#useactiveform-path)
-  - [`useErrors(form)`](#useerrorsform)
-  - [`useValid(form)`](#usevalidform)
+**API**
+
+- [`<UseField form={…} path={…} watchers?={…} />`](#usefield-form-path-watchers-)
+- [`<UseFieldArray form={…} path={…} watchers?={…} />`](#usefieldarray-form-path-watchers-)
+- [`useValue(form, path?)`](#usevalueform-path)
+- [`useInitial(form, path?)`](#useinitialform-path)
+- [`useDirty(form, path?)`](#usedirtyform-path)
+- [`useModified(form, path?)`](#usemodifiedform-path)
+- [`useVisited(form, path?)`](#usevisitedform-path)
+- [`useActive(form, path?)`](#useactiveform-path)
+- [`useErrors(form)`](#useerrorsform)
+- [`useValid(form)`](#usevalidform)
 
 ## API
 
@@ -27,15 +27,9 @@ import { Component, ReactNode } from 'react'
 type UseField<FormValue, Path extends string> = Component<{
   form: Form<FormValue>
   path: Path
-  watch?: Array< // NOTE: by default, everything is watched
-    | 'value'
-    | 'initial'
-    | 'isDirty'
-    | 'isModified'
-    | 'isVisited'
-    | 'isActive'
-    | 'errors'
-  >
+  // NOTE: by default, everything is watched
+  watch?: Array<'value' | 'initial' | 'isDirty' | 'isModified' | 'isVisited' | 'isActive' | 'errors'>
+
   children: (state: {
     path: Path,
     value: InferredValueFrom<FormValues, Path>,
@@ -111,7 +105,7 @@ const MyForm = () => {
 
 ### `<UseFieldArray form={…} path={…} watchers?={…} />`
 
-Exactly the as `UseField` **with** additional state methods `add(value, atIndex)` & `remove(index)`
+Exactly the same as `UseField` **with** additional state methods `add(value, atIndex)` & `remove(index)`
 
 ```tsx
 import { Component, ReactNode } from 'react'
@@ -119,15 +113,9 @@ import { Component, ReactNode } from 'react'
 type UseFieldArray<FormValue, Path extends string> = Component<{
   form: Form<FormValue>
   path: Path
-  watch?: Array< // NOTE: by default, everything is watched
-    | 'value'
-    | 'initial'
-    | 'isDirty'
-    | 'isModified'
-    | 'isVisited'
-    | 'isActive'
-    | 'errors'
-  >
+  // NOTE: by default, everything is watched
+  watch?: Array<'value' | 'initial' | 'isDirty' | 'isModified' | 'isVisited' | 'isActive' | 'errors'>
+
   children: (state: {
     path: Path,
     value: InferredValueFrom<FormValues, Path>,
