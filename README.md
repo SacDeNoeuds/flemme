@@ -58,7 +58,7 @@ export const makeForm = makeLib({ get, set, isEqual, cloneDeep: deepClone })
 ```ts
 // src/lib/flemme.ts
 import { makeLib } from 'flemme'
-import _ from 'lodash'
+import _ from 'lodash-es' // or 'lodash'
 
 export const makeForm = makeLib({
   get: _.get,

@@ -18,7 +18,7 @@ export const formEvents = ['change', 'blur', 'focus', 'reset', 'validated'] as c
 export type FormEvent = typeof formEvents[number]
 type Listener = (path: string | undefined) => void
 
-type Validate<E, T> = (value: PartialDeep<T> | undefined) => E | undefined
+export type Validate<Errors, FormValue> = (value: PartialDeep<FormValue> | undefined) => Errors | undefined
 
 export type Path = string
 
