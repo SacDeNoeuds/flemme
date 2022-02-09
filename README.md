@@ -54,6 +54,32 @@ export const makeForm = makeLib({ get, set, isEqual, cloneDeep: deepClone })
 ```
 
 <details>
+<summary>Advised when you don’t have libraries like lodash/underscore/mout</summary>
+
+```ts
+// src/lib/flemme.ts
+import { makeLib } from 'flemme'
+import fastDeepEqual from 'fast-deep-equal' // 852B minified
+
+import objectDeepCopy from 'object-deep-copy' // 546B minified
+
+import get from 'get-value' // 1.2kB minified
+import set from 'set-value' // 1.5kB minified
+// OR
+import get from '@strikeentco/get' // 450B minified
+import set from '@strikeentco/set' // 574B minified
+
+export const makeForm = makeLib({
+  get,
+  set,
+  isEqual: fastDeepEqual,
+  cloneDeep: objectDeepCopy,
+})
+```
+
+</details>
+
+<details>
 <summary>With Lodash</summary>
 
 ```ts
@@ -77,13 +103,14 @@ export const makeForm = makeLib({
 ```ts
 // src/lib/form.(ts|js)
 import { makeLib } from 'flemme'
-import mout from 'mout'
+import { get, set, deepClone } from 'mout/object'
+import { deepEquals, deepClone } from 'mout/lang'
 
 export const makeForm = makeLib({
-  get: mout.get,
-  set: mout.set,
-  isEqual: mout.equals,
-  cloneDeep: mout.deepClone,
+  get,
+  set,
+  isEqual: deepEquals,
+  cloneDeep: deepClone,
 })
 ```
 
@@ -92,13 +119,15 @@ export const makeForm = makeLib({
 <details>
   <summary>Underscore JS</summary>
 
+:warning: **Untested!**
+
 ```ts
 import { makeLib } from 'flemme'
 import _ from 'underscore'
 import deepCloneMixin from 'underscore.deepclone'
 import getSetMixin from 'underscore.getset'
 _.mixin(deepCloneMixin)
-_.mixin(getSetMixin)e
+_.mixin(getSetMixin)
 
 const makeForm = makeLib({
   get: _.get,

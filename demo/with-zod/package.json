@@ -7,9 +7,8 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "@types/lodash-es": "^4.17.6",
     "flemme": "file:../..",
-    "lodash-es": "^4.17.21",
+    "mout": "^1.2.3",
     "type-fest": "^2.11.2",
     "typescript": "^4.4.4",
     "vite": "^2.7.2",
