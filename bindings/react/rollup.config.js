@@ -30,19 +30,23 @@ const plugins = (output) => [
   visualizer({ filename: `${output}/stats.html`, gzipSize: true, sourcemap: true, template: 'sunburst' }),
 ]
 
+const external = ['react', 'flemme']
+
 export default [
   {
     input: {
       main: 'src/main.ts',
     },
     output: { dir: folders.esm, format: 'esm', sourcemap: true },
+    external,
     plugins: plugins(folders.esm),
   },
-  {
-    input: {
-      main: 'src/main.ts',
-    },
-    output: { dir: folders.cjs, format: 'cjs', sourcemap: true },
-    plugins: plugins(folders.cjs),
-  },
+  // {
+  //   input: {
+  //     main: 'src/main.ts',
+  //   },
+  //   external,
+  //   output: { dir: folders.cjs, format: 'cjs', sourcemap: true },
+  //   plugins: plugins(folders.cjs),
+  // },
 ]

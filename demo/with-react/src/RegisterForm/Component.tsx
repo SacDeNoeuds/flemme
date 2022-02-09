@@ -2,7 +2,8 @@
 /* eslint-disable import/no-unresolved */
 import { ComponentProps, FC, FormEvent, useMemo, useState } from 'react'
 import { type Form } from 'flemme'
-import { useValue, useModified, useVisited, useDirty, useErrors } from '../lib/flemme.react'
+// import { useValue, useModified, useVisited, useDirty, useErrors } from '../lib/flemme.react'
+import { UseField, UseFieldArray, useDirty, useErrors, useVisited, useModified, useValue } from 'flemme-react'
 import { registerForm, register, type FormValues, type ValidationError } from './form'
 import { type PartialDeep } from 'type-fest'
 
@@ -53,7 +54,21 @@ export const RegisterForm: FC<Props> = ({ initialValue, onRegister = register })
 
       <label>
         {'Password'}
-        <TextInput type="password" form={form} path={'password'} />
+        {/* <TextInput type="password" form={form} path={'password'} /> */}
+        <UseField form={form} path={'password'} watch={['value']}>
+          {({ path, value, change, focus, blur }) => (
+            <input
+              data-test={console.info({ path, value })}
+              type="password"
+              value={value ?? ''}
+              onChange={(event) => {
+                change((event.target.value as any) || undefined)
+              }}
+              onFocus={focus}
+              onBlur={blur}
+            />
+          )}
+        </UseField>
         <Errors form={form} path={'password'} errors={errors} />
       </label>
 
@@ -62,6 +77,32 @@ export const RegisterForm: FC<Props> = ({ initialValue, onRegister = register })
         <TextInput type="password" form={form} path={'confirmation'} />
         <Errors form={form} path={'confirmation'} errors={errors} />
       </label>
+
+      <UseFieldArray form={form} path={'requirements'}>
+        {({ path, value, add, remove }) => (
+          <fieldset>
+            <legend>
+              {'Requirements '}
+              <button type="button" onClick={() => add('')}>
+                {'+'}
+              </button>
+            </legend>
+            {value?.map((_, index) => (
+              <label key={index}>
+                {`#${index + 1} `}
+                <div style={{ display: 'flex' }}>
+                  <TextInput form={form} path={`${path}.${index}`} />
+                  &nbsp;
+                  <button style={{ flex: 1 }} type="button" onClick={() => remove(index)}>
+                    {'×'}
+                  </button>
+                </div>
+                <Errors form={form} path={`${path}.${index}`} errors={errors} />
+              </label>
+            ))}
+          </fieldset>
+        )}
+      </UseFieldArray>
 
       <div style={{ textAlign: 'center' }}>
         <button type="submit">{'Submit'}</button>
@@ -86,16 +127,16 @@ const Errors: FC<ErrorsProps> = ({ form, path, errors }) => {
   return <small className="feedback-error">Errors: {filtered.map((error) => `"${error.code}"`).join(', ')}</small>
 }
 
-type TextInputProps<T, P extends string> = {
+type TextInputProps<T, P extends string> = Omit<ComponentProps<'input'>, 'form' | 'value' | 'onChange'> & {
   type?: ComponentProps<'input'>['type']
   form: Form<T>
   path: P
 }
-const TextInput = <T, P extends string>({ type = 'text', form, path }: TextInputProps<T, P>) => {
+const TextInput = <T, P extends string>({ type = 'text', form, path, ...props }: TextInputProps<T, P>) => {
   const value: any = useValue(form, path)
-  // console.info({ [path]: value })
   return (
     <input
+      {...props}
       type={type}
       value={value ?? ''}
       onChange={(event) => {
