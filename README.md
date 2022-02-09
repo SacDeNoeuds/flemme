@@ -10,6 +10,7 @@ Table of contents:
 
 - [Installation](#installation)
 - [Basic usage](#basic-usage)
+- [Philosophy](#philosophy)
 - [Limitations](#limitations)
 - [Demos](#demos)
 - [API](#api)
@@ -64,7 +65,7 @@ export const makeForm = makeLib({
   get: _.get,
   set: _.set,
   isEqual: _.isEqual,
-  cloneDeep: _.isEqual,
+  cloneDeep: _.cloneDeep,
 })
 ```
 
@@ -158,72 +159,39 @@ form.submit(async (values) => { await fetch('…', {}) })
   .catch(() => {…})
 ```
 
+## Philosophy
+
+I think handling forms means two main subjects:
+
+1. Form **state**, such as dirty/pristine, touched/modified, visited, active and state mutations
+2. Form **validation**
+   And of course, then it has to be testable…
+
+About form **validation**, there already exist wonderful tools to validate schema or even add cross-field validation, the idea is to _not_ reimplement one. Among those tools:
+
+- [superstruct](https://docs.superstructjs.org/)
+- [zod](https://github.com/colinhacks/zod)
+- [yup](https://github.com/jquense/yup)
+- [io-ts](https://gcanti.github.io/io-ts/)
+- [jsonschema](https://github.com/tdegrunt/jsonschema) − validates [JSON Schema declarations](http://json-schema.org/)
+- …
+
+About form **state**, I figured that in every project at some point we use a utility library like lodash/underscore, therefore functions like `get`, `set` and `isEqual` are _already_ available. This library takes advantage of that and focuses on form state _only_ ; You bring your own validators − and I advise you use a tool mentioned above :innocent:
+
+Plus since TypeScript v4.1, lodash-path related function can be typed strongly, so using lodash-like path felt like a commonly known API to propose.
+
+Now you ought to know (if you don’t yet): a great framework-agnostic form library already exists: [final-form](https://final-form.org/). However, I find the API and config not to be _that_ straightforward. FYI, it’s 16.9kB and has a separate package for arrays while this one is 1.82KB … not counting that you have to bring your own set/get/isEqual functions ; but as mentioned above, you usually already have them in your project. Another advantage of final-form is its very [complete ecosystem](https://final-form.org/docs/final-form/companion-libraries).
+
 ## Limitations
 
 :warning: The top-level value _must_ be an object or an array
 
 ## Demos
 
-- [With `superstruct` validation](/?go-to=_)
-- [With `yup` validation](/?go-to=_)
-- [With `zod` validation](/?go-to=_)
-- [With React](/?go-to=_)
-
-<!-- ### Usage with superstruct − Simple login form
-
-```ts
-import { Form, form, object, string, InferValue } from 'flemme'
-import { object, string, Describe } from 'superstruct'
-
-type LoginFormValue = {
-  login: string
-  password: string
-}
-const schema: Describe<LoginFormValues> = object({
-  login: string(),
-  password: string(),
-})
-const validateLoginForm = (value) => {
-  const [errors] = schema.validate(value)
-  if (!errors) return undefined
-  return errors.failures().map((failure) => ({
-    ...failure,
-    // Adding your own error code is recommended.
-    // Then in the UI you can display a proper error message based on the error code
-    code: '…',
-  }))
-}
-
-const makeLoginForm = (initialValue = { login: undefined, password: undefined }) => {
-  return makeForm({ initial: initialValue, validate: validateLoginForm })
-}
-
-const mimicActualUserActions = async () => {
-  // init page
-  const form = makeLoginForm({
-    login: undefined,
-    password: undefined,
-  })
-
-  // user changes 'login'
-  form.focus('login')
-  form.change('login', 'Batman')
-  form.blur('login')
-
-  // user changes 'password'
-  form.focus('password')
-  form.change('password', 'I <3 Robin')
-  form.blur('password')
-
-  try {
-    await form.submit(async ({ login, password }) => fetch('/login', {
-      body: JSON.stringify({ name: login, pwd: password }),
-    }))
-  } catch (error) {
-    …
-  }
-}
-``` -->
+- [With `superstruct` validation](https://sacdenoeuds.github.io/flemme/with-superstruct)
+- [With `yup` validation](https://sacdenoeuds.github.io/flemme/with-yup)
+- [With `zod` validation](https://sacdenoeuds.github.io/flemme/with-zod)
+- [With React](https://sacdenoeuds.github.io/flemme/with-react)
 
 ## API
 
@@ -238,7 +206,7 @@ const makeLib: (parameters: {
 }) => MakeForm
 ```
 
-### `makeForm<T>({ initial, validate?, validationTriggers? })`
+### `makeForm<T, ValidationErrors>({ initial, validate?, validationTriggers? })`
 
 ```ts
 const makeForm: <T, ValidationErrors>(options: {
