@@ -5,6 +5,10 @@
   "main": "lib/cjs/main.js",
   "module": "lib/esm/main.js",
   "types": "lib/esm/main.d.ts",
+  "files": [
+    "lib/",
+    "src/"
+  ],
   "exports": {
     ".": {
       "import": "./lib/esm/main.js",
