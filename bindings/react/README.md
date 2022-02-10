@@ -4,17 +4,23 @@ React bindings for `flemme`
 
 ## Table of contents
 
-**API**
+- [Installation](#installation)
+- [API](#api)
+  - [`<UseField form={…} path={…} watchers?={…} />`](#usefield-form-path-watchers-)
+  - [`useValue(form, path?)`](#usevalueform-path)
+  - [`useInitial(form, path?)`](#useinitialform-path)
+  - [`useDirty(form, path?)`](#usedirtyform-path)
+  - [`useModified(form, path?)`](#usemodifiedform-path)
+  - [`useVisited(form, path?)`](#usevisitedform-path)
+  - [`useActive(form, path?)`](#useactiveform-path)
+  - [`useErrors(form)`](#useerrorsform)
+  - [`useValid(form)`](#usevalidform)
 
-- [`<UseField form={…} path={…} watchers?={…} />`](#usefield-form-path-watchers-)
-- [`useValue(form, path?)`](#usevalueform-path)
-- [`useInitial(form, path?)`](#useinitialform-path)
-- [`useDirty(form, path?)`](#usedirtyform-path)
-- [`useModified(form, path?)`](#usemodifiedform-path)
-- [`useVisited(form, path?)`](#usevisitedform-path)
-- [`useActive(form, path?)`](#useactiveform-path)
-- [`useErrors(form)`](#useerrorsform)
-- [`useValid(form)`](#usevalidform)
+## Installation
+
+```bash
+npm i -D flemme-react
+```
 
 ## API
 
