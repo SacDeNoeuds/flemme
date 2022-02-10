@@ -110,8 +110,12 @@ const MyForm = () => {
 
 ### `useValue(form, path)`
 
+<!-- prettier-ignore -->
 ```ts
-type UseValue = <FormValue, Path extends string>(form: Form<FormValue>, path: Path) => InferredValueFrom<FormValue, Path>
+type UseValue = <FormValue, Path extends string>(
+  form: Form<FormValue>,
+  path: Path,
+) => InferredValueFrom<FormValue, Path>
 
 // Usage:
 const userFirstName = useValue(form, 'user.names.first')
@@ -120,8 +124,12 @@ const userNames = useValue(form, 'user.names')
 
 ### `useInitial(form, path)`
 
+<!-- prettier-ignore -->
 ```ts
-type UseInitial = <FormValue, Path extends string>(form: Form<FormValue>, path: Path) => InferredValueFrom<FormValue, Path>
+type UseInitial = <FormValue, Path extends string>(
+  form: Form<FormValue>,
+  path: Path,
+) => InferredValueFrom<FormValue, Path>
 
 // Usage:
 const initialUserFirstName = useInitial(form, 'user.names.first')
@@ -177,7 +185,8 @@ const formHasActiveField = useActive(form)
 ### `useErrors(form)`
 
 ```ts
-type UseErrors = <ValidationErrors>(form: Form<any, ValidationErrors>) => ValidationErrors // the return type of _your_ validator
+type UseErrors = <ValidationErrors>(form: Form<any, ValidationErrors>) => ValidationErrors
+// ValidationErrors is the return type of _your_ validator
 
 // Usage:
 const errors = useErrors(form)
