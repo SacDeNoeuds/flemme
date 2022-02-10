@@ -34,6 +34,9 @@ Table of contents:
     - [`form.errors()`](#formerrors)
     - [`form.isValid()`](#formisvalid)
     - [`submit(handler)`](#submithandler)
+  - [Helpers](#helpers)
+    - [`add(array, value, atIndex?)`](#addarray-value-atindex)
+    - [`remove(array, index)`](#removearray-index)
 
 ## Installation
 
@@ -534,6 +537,8 @@ await form.submit(async (values) => {
 ```
 
 ### Helpers
+
+**NB**: The lib is tree-shakeable. Therefore if you don’t use any of these, they won’t jump into your bundle :wink:
 
 #### `add(array, value, atIndex?)`
 

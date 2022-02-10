@@ -7,7 +7,6 @@ React bindings for `flemme`
 **API**
 
 - [`<UseField form={…} path={…} watchers?={…} />`](#usefield-form-path-watchers-)
-- [`<UseFieldArray form={…} path={…} watchers?={…} />`](#usefieldarray-form-path-watchers-)
 - [`useValue(form, path?)`](#usevalueform-path)
 - [`useInitial(form, path?)`](#useinitialform-path)
 - [`useDirty(form, path?)`](#usedirtyform-path)
@@ -106,21 +105,19 @@ const MyForm = () => {
 ### `useValue(form, path)`
 
 ```ts
-type UseValue = <FormValue, Path extends string>(form: Form<FormValue>, path?: Path) => InferredValueFrom<FormValue, Path>
+type UseValue = <FormValue, Path extends string>(form: Form<FormValue>, path: Path) => InferredValueFrom<FormValue, Path>
 
 // Usage:
-const formValue = useValue(form)
 const userFirstName = useValue(form, 'user.names.first')
 const userNames = useValue(form, 'user.names')
 ```
 
-### `useInitial(form, path?)`
+### `useInitial(form, path)`
 
 ```ts
-type UseInitial = <FormValue, Path extends string>(form: Form<FormValue>, path?: Path) => InferredValueFrom<FormValue, Path>
+type UseInitial = <FormValue, Path extends string>(form: Form<FormValue>, path: Path) => InferredValueFrom<FormValue, Path>
 
 // Usage:
-const initialFormValue = useInitial(form)
 const initialUserFirstName = useInitial(form, 'user.names.first')
 const initialUserNames = useInitial(form, 'user.names')
 ```
