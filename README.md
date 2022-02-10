@@ -44,9 +44,11 @@ Table of contents:
 npm i -D flemme
 ```
 
-:warning: **For TS users**: Enabling proper types requires TS v4.1+ and type-fest v0.21+
-
 Then create a file to initialise the lib. Since I don’t want to enforce lib choices but I still need classic functions, you’ll have to inject into the lib:
+
+**TS users**: Enabling proper types requires TS v4.1+ and type-fest v0.21+
+
+**React users**: check out the React binding package [`flemme-react`](/bindings/react/)
 
 ```ts
 // src/lib/flemme.(js|ts)
@@ -220,10 +222,10 @@ Now you ought to know (if you don’t yet): a great framework-agnostic form libr
 
 ## Demos
 
-- [With `superstruct` validation](https://sacdenoeuds.github.io/flemme/with-superstruct)
-- [With `yup` validation](https://sacdenoeuds.github.io/flemme/with-yup)
-- [With `zod` validation](https://sacdenoeuds.github.io/flemme/with-zod)
-- [With React](https://sacdenoeuds.github.io/flemme/with-react)
+- [With `superstruct` validation](https://sacdenoeuds.github.io/flemme/with-superstruct/)
+- [With `yup` validation](https://sacdenoeuds.github.io/flemme/with-yup/)
+- [With `zod` validation](https://sacdenoeuds.github.io/flemme/with-zod/)
+- [With React](https://sacdenoeuds.github.io/flemme/with-react/)
 
 ## API
 
