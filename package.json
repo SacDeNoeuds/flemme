@@ -2,20 +2,21 @@
   "name": "flemme",
   "version": "0.1.0",
   "description": "Framework-agnostic form manager/handler/abstraction",
-  "main": "build/cjs/main.js",
-  "module": "build/esm/main.js",
-  "types": "build/esm/main.d.ts",
+  "main": "lib/cjs/main.js",
+  "module": "lib/esm/main.js",
+  "types": "lib/esm/main.d.ts",
   "exports": {
     ".": {
-      "import": "./build/esm/main.js",
-      "require": "./build/cjs/main.js"
+      "import": "./lib/esm/main.js",
+      "require": "./lib/cjs/main.js"
     }
   },
   "scripts": {
     "prepare": "husky install",
     "build": "rollup -c ./rollup.config.js",
     "lint": "eslint --ext .ts src",
-    "test": "jest --coverage"
+    "test": "jest --coverage",
+    "deploy:demo": "node ./deploy.js"
   },
   "keywords": [
     "agnostic",

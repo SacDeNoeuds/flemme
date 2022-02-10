@@ -1,9 +1,9 @@
 {
-  "name": "with-yup",
+  "name": "@flemme/with-yup",
   "version": "0.0.0",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "tsc && vite build --base=/flemme/with-yup/",
     "preview": "vite preview"
   },
   "devDependencies": {

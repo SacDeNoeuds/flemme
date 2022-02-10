@@ -1,9 +1,9 @@
 {
-  "name": "with-superstruct",
+  "name": "@flemme/with-superstruct",
   "version": "0.0.0",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "tsc && vite build --base=/flemme/with-superstruct/",
     "preview": "vite preview"
   },
   "devDependencies": {

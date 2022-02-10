@@ -1,9 +1,9 @@
 {
-  "name": "with-zod",
+  "name": "@flemme/with-zod",
   "version": "0.0.0",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "tsc && vite build --base=/flemme/with-zod/",
     "preview": "vite preview"
   },
   "devDependencies": {

@@ -1,9 +1,9 @@
 {
-  "name": "with-react",
+  "name": "@flemme/with-react",
   "version": "0.0.0",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "tsc && vite build --base=/flemme/with-react/",
     "preview": "vite preview"
   },
   "dependencies": {

@@ -25,7 +25,7 @@ export const useModified = makeHook('isModified', ['change', 'reset', 'validated
 export const useVisited = makeHook('isVisited', ['focus', 'reset', 'validated'])
 export const useActive = makeHook('isActive', ['focus', 'blur', 'reset'])
 export const useDirty = makeHook('isDirty', ['change', 'reset'])
-export const useErrors = makeHook('errors', ['validated'])
+export const useErrors = makeHook('errors', ['validated']) as <ValidationErrors>(form: Form<any, ValidationErrors>) => ValidationErrors
 export const useValid = makeHook('isValid', ['validated'])
 export const useValue = makeHook('value', ['change', 'reset']) as <T, P extends string>(form: Form<T>, path?: P) => PartialDeep<Get<T, P>>
 export const useInitial = makeHook('initial', ['change', 'reset']) as <T, P extends string>(form: Form<T>, path?: P) => PartialDeep<Get<T, P>>

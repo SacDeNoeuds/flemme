@@ -9,8 +9,8 @@ import { terser } from 'rollup-plugin-terser'
 const isDebug = ['debug', 'dev', 'development'].includes(process.env.NODE_ENV)
 
 const folders = {
-  esm: './build/esm',
-  cjs: './build/cjs',
+  esm: './lib/esm',
+  cjs: './lib/cjs',
 }
 
 const plugins = (output) => [
