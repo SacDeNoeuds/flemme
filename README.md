@@ -532,3 +532,26 @@ await form.submit(async (values) => {
   if (!response.ok) throw new Error('Received an error')
 })
 ```
+
+### Helpers
+
+#### `add(array, value, atIndex?)`
+
+```ts
+import { add } from 'flemme'
+
+const myArray = ['a', 'b', 'c', 'd']
+const myNewArray1 = add(myArray, 'e') // append 'e'
+const myNewArray2 = add(myArray, 'e', 2) // ['a', 'b', 'e', 'c', 'd']
+```
+
+#### `remove(array, index)`
+
+```ts
+import { remove } from 'flemme'
+
+const myArray = ['a', 'b', 'c', 'd']
+const myNewArray1 = remove(myArray, 2) // removes 'c' → ['a', 'b', 'd']
+const myNewArray2 = remove(myArray, 123) // removes nothing
+const myNewArray3 = remove(myArray, -1) // removes nothing
+```

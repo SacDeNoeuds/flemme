@@ -1,11 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable import/no-unresolved */
 import { ComponentProps, FC, FormEvent, useMemo, useState } from 'react'
-import { type Form } from 'flemme'
-// import { useValue, useModified, useVisited, useDirty, useErrors } from '../lib/flemme.react'
-import { UseField, UseFieldArray, useDirty, useErrors, useVisited, useModified, useValue } from 'flemme-react'
+import { type Form, add, remove } from 'flemme'
+import { UseField, useDirty, useErrors, useVisited, useModified, useValue } from 'flemme-react'
 import { registerForm, register, type FormValues, type ValidationError } from './form'
-import { type PartialDeep } from 'type-fest'
+import type { PartialDeep } from 'type-fest'
 
 type Props = {
   initialValue?: PartialDeep<FormValues>
@@ -78,12 +76,12 @@ export const RegisterForm: FC<Props> = ({ initialValue, onRegister = register })
         <Errors form={form} path={'confirmation'} errors={errors} />
       </label>
 
-      <UseFieldArray form={form} path={'requirements'}>
-        {({ path, value, add, remove }) => (
+      <UseField form={form} path={'requirements'}>
+        {({ path, value }) => (
           <fieldset>
             <legend>
               {'Requirements '}
-              <button type="button" onClick={() => add('')}>
+              <button type="button" onClick={() => add(value, '')}>
                 {'+'}
               </button>
             </legend>
@@ -93,7 +91,7 @@ export const RegisterForm: FC<Props> = ({ initialValue, onRegister = register })
                 <div style={{ display: 'flex' }}>
                   <TextInput form={form} path={`${path}.${index}`} />
                   &nbsp;
-                  <button style={{ flex: 1 }} type="button" onClick={() => remove(index)}>
+                  <button style={{ flex: 1 }} type="button" onClick={() => remove(value, index)}>
                     {'×'}
                   </button>
                 </div>
@@ -102,7 +100,7 @@ export const RegisterForm: FC<Props> = ({ initialValue, onRegister = register })
             ))}
           </fieldset>
         )}
-      </UseFieldArray>
+      </UseField>
 
       <div style={{ textAlign: 'center' }}>
         <button type="submit">{'Submit'}</button>

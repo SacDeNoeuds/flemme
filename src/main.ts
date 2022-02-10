@@ -3,6 +3,8 @@
 import type { Get, PartialDeep } from 'type-fest'
 import { some, removeBy } from './lib/iterable'
 
+export { add, remove } from './lib/iterable'
+
 export type GetFn = (target: any, path: string, defaultValue?: any) => any
 export type SetFn = (target: any, path: string, value: any) => void
 export type IsEqualFn = (a: any, b: any) => boolean
