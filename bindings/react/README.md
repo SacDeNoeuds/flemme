@@ -6,7 +6,7 @@ React bindings for `flemme`
 
 - [Installation](#installation)
 - [API](#api)
-  - [`<UseField form={…} path={…} watchers?={…} />`](#usefield-form-path-watchers-)
+  - [`<UseField form={…} path={…} watch?={…} />`](#usefield-form-path-watchers-)
   - [`useValue(form, path)`](#usevalueform-path)
   - [`useInitial(form, path)`](#useinitialform-path)
   - [`useDirty(form, path?)`](#usedirtyform-path)
@@ -24,7 +24,7 @@ npm i -D flemme-react
 
 ## API
 
-### `<UseField form={…} path={…} watchers?={…} />`
+### `<UseField form={…} path={…} watch?={…} />`
 
 ```tsx
 import { Component, ReactNode } from 'react'
