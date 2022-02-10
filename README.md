@@ -1,439 +1,562 @@
-# formacy
+# Flemme
 
 Hopefully − the cure to (complex) forms
 
 Framework-agnostic form management
 
-## Getting started
+---
 
-### Installation
+Table of contents:
+
+- [Installation](#installation)
+- [Basic usage](#basic-usage)
+- [Philosophy](#philosophy)
+- [Limitations](#limitations)
+- [Demos](#demos)
+- [API](#api)
+  - [`makeLib({ get, set, isEqual, cloneDeep })`](#makelib-get-set-isequal-clonedeep-)
+  - [`makeForm<T>({ initial, validate?, validationTriggers? })`](#makeformt-initial-validate-validationtriggers-)
+  - [Form](#form)
+    - [`form.initial(path?)`](#forminitialpath)
+    - [`form.value(path?)`](#formvaluepath)
+    - [`form.isDirty(path?)`](#formisdirtypath)
+    - [`form.isModified(path?)`](#formismodifiedpath)
+    - [`form.isVisited(path?)`](#formisvisitedpath)
+    - [`form.isActive(path?)`](#formisactivepath)
+    - [`form.change(formValue)` / `form.change(path, value)`](#formchangeformvalue--formchangepath-value)
+    - [`form.reset(nextInitialValue?)`](#formresetnextinitialvalue)
+    - [`form.resetAt(path, nextInitialValue?)`](#formresetatpath-nextinitialvalue)
+    - [`form.blur(path)`](#formblurpath)
+    - [`form.focus(path)`](#formfocuspath)
+    - [`form.on(event, listener)` / `form.on(path, event, listener)`](#formonevent-listener--formonpath-event-listener)
+    - [`form.off(event, listener)`](#formoffevent-listener)
+    - [`form.validate()`](#formvalidate)
+    - [`form.errors()`](#formerrors)
+    - [`form.isValid()`](#formisvalid)
+    - [`submit(handler)`](#submithandler)
+  - [Helpers](#helpers)
+    - [`add(array, value, atIndex?)`](#addarray-value-atindex)
+    - [`remove(array, index)`](#removearray-index)
+
+## Installation
 
 ```sh
-npm i -D formacy
+npm i -D flemme
 ```
 
-## Guides
+:warning: **For TS users**: Enabling proper types requires TS v4.1+ and type-fest v0.21+
 
-### Simple login form
+Then create a file to initialise the lib. Since I don’t want to enforce lib choices but I still need classic functions, you’ll have to inject into the lib:
 
 ```ts
-import { Form, form, object, string, InferValue } from 'formacy'
+// src/lib/flemme.(js|ts)
+import { makeLib } from 'flemme'
+import { get, set, isEqual, deepClone } from 'your-favorite-tool'
 
-type LoginFormValue = {
-  login: string
-  password: string
-}
-const makeLoginForm = form<LoginFormValue>({
-  schema: object({
-    login: string(),
-    password: string(),
-  }),
+export const makeForm = makeLib({ get, set, isEqual, cloneDeep: deepClone })
+```
+
+<details>
+<summary>Advised when you don’t have libraries like lodash/underscore/mout</summary>
+
+```ts
+// src/lib/flemme.ts
+import { makeLib } from 'flemme'
+import fastDeepEqual from 'fast-deep-equal' // 852B minified
+
+import objectDeepCopy from 'object-deep-copy' // 546B minified
+
+import get from 'get-value' // 1.2kB minified
+import set from 'set-value' // 1.5kB minified
+// OR
+import get from '@strikeentco/get' // 450B minified
+import set from '@strikeentco/set' // 574B minified
+
+export const makeForm = makeLib({
+  get,
+  set,
+  isEqual: fastDeepEqual,
+  cloneDeep: objectDeepCopy,
 })
-// Although it's recommended to declare your type first, you can also infer the form value
-type InferredLoginFormValue = InferValue<typeof makeLoginForm>
-
-const submitLoginForm = async (loginForm: Form<LoginFormValue>) => {
-  loginForm.validate()
-  if (!loginForm.valid) return
-  const result = await fetch('/login', {
-    body: {
-      username: loginForm.fields.login.value,
-      password: loginForm.field.password.value,
-    },
-  })
-}
-
-const main = async () => {
-  const loginForm = makeLoginForm({
-    login: undefined,
-    password: undefined,
-  })
-
-  // simulated users interactions:
-  loginForm.fields.login.focus()
-  loginForm.fields.login.change('Batman')
-  loginForm.fields.login.blur()
-
-  // simulated 'password' change
-  loginForm.fields.password.focus()
-  loginForm.fields.password.change('I <3 Robin')
-  loginForm.fields.password.blur()
-
-  await submitLoginForm(loginForm)
-}
 ```
 
-### Custom validation
+</details>
+
+<details>
+<summary>With Lodash</summary>
 
 ```ts
-import { Form, form, object, string, makeValidator } from 'formacy'
-import isEmail from 'is-email'
+// src/lib/flemme.ts
+import { makeLib } from 'flemme'
+import _ from 'lodash-es' // or 'lodash'
 
-const mustBeEmail = () =>
-  makeValidator(
-    isEmail, // predicate, return true for a valid value
-    (value) => ({ type: 'mustBeEmail', value }), // validation error, only 'type' is required
-  )
+export const makeForm = makeLib({
+  get: _.get,
+  set: _.set,
+  isEqual: _.isEqual,
+  cloneDeep: _.cloneDeep,
+})
+```
 
-const makeLoginForm = form<LoginFormValue>({
-  schema: object({
-    login: string(mustBeEmail()),
-    password: string(),
-  }),
+</details>
+
+<details>
+<summary>With MoutJS</summary>
+
+```ts
+// src/lib/form.(ts|js)
+import { makeLib } from 'flemme'
+import { get, set, deepClone } from 'mout/object'
+import { deepEquals, deepClone } from 'mout/lang'
+
+export const makeForm = makeLib({
+  get,
+  set,
+  isEqual: deepEquals,
+  cloneDeep: deepClone,
+})
+```
+
+</details>
+
+<details>
+  <summary>Underscore JS</summary>
+
+:warning: **Untested!**
+
+```ts
+import { makeLib } from 'flemme'
+import _ from 'underscore'
+import deepCloneMixin from 'underscore.deepclone'
+import getSetMixin from 'underscore.getset'
+_.mixin(deepCloneMixin)
+_.mixin(getSetMixin)
+
+const makeForm = makeLib({
+  get: _.get,
+  set: _.set,
+  isEqual: _.isEqual,
+  cloneDeep: _.deepClone,
+})
+```
+
+</details>
+
+## Basic usage
+
+```ts
+// src/path/to/user-form.(js|ts)
+import { makeForm } from 'path/to/lib/form'
+
+export const makeUserProfileForm = (initialValue) => makeForm({
+  initial: initialValue,
+  validate: validateUserProfileForm,
+  validationTriggers: ['change', 'blur', 'focus', 'reset', 'validated'], // all available triggers, pick only a subset of course (ideally one only)
 })
 
-const main = () => {
-  const loginForm = makeLoginForm({ login: 'not-an-email', password: '******' })
-  loginForm.validate()
-  // field-level errors
-  loginForm.fields.login.errors // [{ type: 'mustBeEmail', value: 'not-an-email' }]
+const validateUserProfileForm = (value) => {
+  const errors = [] // not necessarily an array, the data type of your choice ; who am I to tell you what data type best suits your need ?
 
-  // form-level errors
-  loginForm.errors // [{ field: loginForm.fields.login, type: 'mustBeEmail', value: 'not-an-email' }]
+  if (!value.name) errors.push({ code: 'name is required' })
+  return errors.length === 0
+    ? undefined // IMPORTANT: that's how the lib knows the form is valid
+    : errors
 }
-```
 
-### All fields − user form
-
-```ts
-import { Form, form, array, object, string, number, boolean, optional, nullable, date, literal, makeValidator } from 'formacy'
-
-type UserFormValue = {
-  gender: 'male' | 'female' | 'other'
-  name: string
-  birthDate: Date | undefined // WARNING: use "prop: MyType | undefined" and not "prop?: MyType"
-  hobbies: Array<{ name: string; hoursPerWeek: number }> | null
-}
-const makeUserForm = form<UserFormValue>({
-  schema: object({
-    gender: literal(['male', 'female', 'other']),
-    name: string(),
-    birthDate: optional(date()),
-    hobbies: nullable(
-      array(
-        object({
-          name: string(),
-          hoursPerWeek: number(mustBePositive()),
-        }),
-      ),
-    ),
-  }),
+const form = makeUserProfileForm({
+  name: { first: 'John', last: 'Doe' },
+  birthDate: new Date('1968-05-18'),
+  tags: ['awesome guy', 'great dude'],
 })
 
-// custom validators:
-const isGreaterThan = (min: number) => (n) => n >= min
-const greaterThan = (min: number, type = 'greaterThan') =>
-  makeValidator(
-    isGreaterThan(min), // predicate, return true for a valid value
-    (value) => ({ type, value, min }), // validation error, only "type" is required
-  )
-const positive = () => greaterThan(0, 'positive')
+// mimic actual user actions
+form.focus('name.first')
+form.change('name.first', 'Fred')
+form.blur('name.first')
+
+form.focus('name.last')
+form.change('name.last', 'Aster')
+form.blur('name.last')
+
+form.focus('tags.1')
+form.change('tags.1', 'great dancer') // replaces "great dude" by "great dancer"
+form.blur('tags.1')
+
+// Handle array additions & deletion at array-level
+// Avoid using form.change('tags.2', 'Kind hearted') to append a value
+form.change('tags', [...form.value('tags'), 'Kind hearted'])
+
+form.submit(async (values) => { await fetch('…', {}) })
+  .then(() => {…})
+  .catch(() => {…})
 ```
 
-### Add form/fields listeners
+## Philosophy
 
-```ts
+I think handling forms means two main subjects:
 
-```
+1. Form **state**, such as dirty/pristine, touched/modified, visited, active and state mutations
+2. Form **validation**
+   And of course, then it has to be testable…
 
-### Interdependant fields values − shipping form → skip if shipping address when same as billing
+About form **validation**, there already exist wonderful tools to validate schema or even add cross-field validation, the idea is to _not_ reimplement one. Among those tools:
 
-```ts
+- [superstruct](https://docs.superstructjs.org/)
+- [zod](https://github.com/colinhacks/zod)
+- [yup](https://github.com/jquense/yup)
+- [io-ts](https://gcanti.github.io/io-ts/)
+- [jsonschema](https://github.com/tdegrunt/jsonschema) − validates [JSON Schema declarations](http://json-schema.org/)
+- …
 
-```
+About form **state**, I figured that in every project at some point we use a utility library like lodash/underscore, therefore functions like `get`, `set` and `isEqual` are _already_ available. This library takes advantage of that and focuses on form state _only_ ; You bring your own validators − and I advise you use a tool mentioned above :innocent:
 
-### Interdependant fields validation − password match
+Plus since TypeScript v4.1, lodash-path related function can be typed strongly, so using lodash-like path felt like a commonly known API to propose.
 
-```ts
+Now you ought to know (if you don’t yet): a great framework-agnostic form library already exists: [final-form](https://final-form.org/). However, I find the API and config not to be _that_ straightforward. FYI, it’s 16.9kB and has a separate package for arrays while this one is 1.82KB … not counting that you have to bring your own set/get/isEqual functions ; but as mentioned above, you usually already have them in your project. Another advantage of final-form is its very [complete ecosystem](https://final-form.org/docs/final-form/companion-libraries).
 
-```
+## Limitations
 
-### Async validation
+:warning: The top-level value _must_ be an object or an array
 
-```ts
+## Demos
 
-```
-
-### Sync & Async validation
-
-```ts
-
-```
+- [With `superstruct` validation](https://sacdenoeuds.github.io/flemme/with-superstruct)
+- [With `yup` validation](https://sacdenoeuds.github.io/flemme/with-yup)
+- [With `zod` validation](https://sacdenoeuds.github.io/flemme/with-zod)
+- [With React](https://sacdenoeuds.github.io/flemme/with-react)
 
 ## API
 
+### `makeLib({ get, set, isEqual, cloneDeep })`
+
+```ts
+const makeLib: (parameters: {
+  get: (target: any, path: string, defaultValue?: any) => any
+  set: (target: any, path: string, value: any) => void
+  isEqual: (a: any, b: any) => boolean
+  cloneDeep: <T>(value: T) => T
+}) => MakeForm
+```
+
+### `makeForm<T, ValidationErrors>({ initial, validate?, validationTriggers? })`
+
+```ts
+const makeForm: <T, ValidationErrors>(options: {
+  initial: PartialDeep<T> // array or object
+  validate: (value: PartialDeep<T>) => ValidationErrors | undefined
+  validationTriggers: Array<'change' | 'blur' | 'focus' | 'reset' | 'validated'>
+}) => Form<T, ValidationErrors>
+```
+
+**:warning: NB: You bring your own validation errors shape, the only requirement is that `undefined` is returned when no error**
+
 ### Form
 
-Form
-form
-
-### Fields
-
-#### `BaseField<Value>` (type)
+#### `form.initial(path?)`
 
 ```ts
-interface BaseField<Value> {
-  readonly initial: Value | undefined | null
-  readonly value: Value | undefined | null // When field is required, cannot be undefined or null when valid is `true`
-  /** true` when a change − even to same value − has been made. Object and array reflect that value as well */
-  readonly touched: boolean
-  /** `true` when the field has gained focus, never changes to false until a reset */
-  readonly visited: boolean
-  /**
-   * For primitive fields, `true` when the field has gained focus then `false` when losing it.
-   * For object and array fields, `true` if some of their inner fields visited value is `true`, `false` otherwise
-   */
-  readonly active: boolean
-  readonly pristine: boolean // `true` when value is same as initial, no matter how many changes
-  readonly dirty: boolean // opposite of pristine
-  readonly errors: ValidationError[] // type ValidationError = { type: string, ...otherMeta: Record<string, any> }
-  readonly valid: boolean // only when errors.length === 0
-
-  readonly name: string // lodash-like path, ie: object({ cities: array(string()) }) → cities[0] name is 'cities.0'
-
-  reset(nextInitial?: Value | undefined | null): void
-  validate(): void
-  on(eventName: 'reset' | 'change' | 'focus' | 'blur', listener: () => void): Unlisten /* type Unlisten = () => void */
-  change(value: Value | undefined | null): void
+interface Initial<T> {
+  initial(): PartialDeep<T> | undefined
+  initial<P extends string>(path: P): PartialDeep<Get<T, P>> // strongly typed: value will be inferred from path
 }
+
+// Usage:
+form.initial() // form initial value
+form.initial('user.name.first') // initial sub value
+form.initial('user.name') // initial sub value
 ```
 
-#### `primitive<T>()`
+#### `form.value(path?)`
 
 ```ts
-function primitive<T extends Primitive>(...validators: Array<Validator<T>>): /* … internal mechanism then … */ PrimitiveField<T>
-
-type Primitive = string | number | boolean | Date
-type Validator<T> = (value: T | undefined | null) => ValidationError[]
-
-interface PrimitiveField<T> extends BaseField<T> {
-  focus: () => void
-  blur: () => void
+interface Value<T> {
+  value(): PartialDeep<T> | undefined
+  value<P extends string>(path: P): PartialDeep<Get<T, P>> // strongly typed: value will be inferred from path
 }
+
+// Usage:
+form.value() // form value
+form.value('user.name.first') // sub value
+form.value('user.name') // sub value
 ```
 
-#### `string()`
+#### `form.isDirty(path?)`
+
+A property is marked as dirty when its value is deeply unequal to its initial value.
 
 ```ts
-import { mustBeString } from 'path/to/internal-validators'
-export const string = (...validators: Validator<string>[]) => primitive<string>(mustBeString(), ...validators)
+type IsDirty = (path?: string) => boolean
+
+// Usage:
+form.isDirty() // check the whole form
+form.isDirty('user.name.first') // check only a sub value
+form.isDirty('user.name') // check only a subset of properties
 ```
 
-#### `number()`
+#### `form.isModified(path?)`
+
+A property is marked as modified when it is _changed_ − `form.change(path, …)` −, **no matter if the value is the same or different from the initial one**
 
 ```ts
-import { mustBeNumber } from 'path/to/internal-validators'
-export const number = (...validators: Validator<number>[]) => primitive<number>(mustBeNumber(), ...validators)
+type IsModified = (path?: string) => boolean
+
+// Usage:
+form.isModified() // check the whole form
+form.isModified('user.name.first') // check only a sub value
+form.isModified('user.name') // check only a subset of properties
 ```
 
-#### `date()`
+#### `form.isVisited(path?)`
+
+A property is marked as visited when it has gained focus once. Only a `form.reset(path?)` unmarks the poperty as "visited".
 
 ```ts
-import { mustBeDate } from 'path/to/internal-validators'
-export const date = (...validators: Validator<Date>[]) => primitive<Date>(mustBeDate(), ...validators)
+type IsVisited = (path?: string) => boolean
+
+// Usage:
+form.isVisited() // check the whole form
+form.isVisited('user.name.first') // check only a sub value
+form.isVisited('user.name') // check only a subset of properties
 ```
 
-#### `boolean()`
+#### `form.isActive(path?)`
+
+A property is marked as visited when it has gained focus once. Only a `form.reset(path?)` unmarks the poperty as "visited".
 
 ```ts
-import { mustBeBoolean } from 'path/to/internal-validators'
-export const boolean = (...validators: Validator<boolean>[]) => primitive(mustBeBoolean(), ...validators)
+type IsActive = (path?: string) => boolean
+
+// Usage:
+form.isActive() // checks if one of the properties has focus
+form.isActive('user.name.first') // check if a sub value has focus
+form.isActive('user.name') // check if user.name.first OR user.name.last has focus
 ```
 
-#### `oneOf()`
+#### `form.change(formValue)` / `form.change(path, value)`
 
 ```ts
-import { mustBeOneOf } from 'path/to/internal-validators'
-export const oneOf = <Value extends Primitive>(literals: Value[], ...validators: Validator<Value>[]) => {
-  return primitive<Value>(mustBeOneOf(literals), ...validators)
+interface Change<T> {
+  change(value: T | undefined): void
+  change<P extends string>(
+    path: P,
+    value: PartialDeep<Get<T, P>> | undefined, // strongly typed: value will be inferred from path
+  ): void
 }
-```
 
-#### `optional()`
-
-```ts
-// Types are simplified/vulgarized
-type Field<T> = PrimitiveField<T> | ObjectField<T> | ArrayField<T>
-const optional = <T>(field: BaseField<T>): BaseField<T | undefined> => {…}
-
-// Usage
-const demo = object({
-  // works on primitives
-  name: optional(string()),
-
-  // works on arrays
-  hobbies: optional(array(string())),
-
-  // works on objects
-  address: optional(object({ street: string(), /* … */ })),
-})
-```
-
-#### `nullable()`
-
-```ts
-// Types are simplified/vulgarized
-type Field<T> = PrimitiveField<T> | ObjectField<T> | ArrayField<T>
-const nullable = <T>(field: Field<T>): Field<T | null> => {…}
-
-// Usage
-const demo = object({
-  // works on primitives
-  name: nullable(string()),
-
-  // works on arrays
-  hobbies: nullable(array(string())),
-
-  // works on objects
-  address: nullable(object({ street: string(), /* … */ })),
-})
-```
-
-#### `object()`
-
-```ts
-const object = <T>(
-  fields: { [Key in keyof T]: Field<T[Key]> }, /* basically: a field for each key */
-  options: {
-    validators?: Validator<T>[], // Array<(value: T) => ValidationError[]>
-    validateAsync?: (value: T) => Promise<ValidationError[]>
-    /**
-     * `onInit` is triggered when fields are created, which might happen multiple times for optional/nullable object fields
-     * It allows to register event listeners for instance
-     */
-    onInit?: (field: ObjectField<T>) => void
+// Usage:
+// change form value
+form.change({
+  user: {
+    name: {
+      first: 'John',
+      last: 'Doe',
+    },
   },
-): /* …internal mechanism then … */ ObjectField<T> => {…}
+})
 
-interface ObjectField<T> extends BaseField<T> {
-  readonly fields:
-    | undefined /* when value is undefined */
-    | null /* when value is null */
-    | { [Key in keyof T]: Field<T[Key]> }, /* basically: a field for each key */
-  readonly validated: Promise<void> // useful only when `validateAsync` is provided
-}
+// change sub value
+form.change('user.name.first', 'John')
+form.change('user.name', {
+  first: 'John',
+  last: 'Doe',
+})
 ```
 
-#### `merge()`
+#### `form.reset(nextInitialValue?)`
 
 ```ts
-// Types are simplified/vulgarized
-type AnyObject = Record<string, any>
-const merge = <A extends AnyObject, B extends AnyObject, C extends AnyObject /*, … */>(a, b, c /*, … */): ObjectField<A & B & C /* & … */> => {…}
+type Reset<T> = (nextInitialValue?: T) => void
+
+// Usage:
+// reset to current initial value
+form.reset()
+
+// reset to new initial value
+form.reset({
+  user: {
+    name: {
+      first: 'John',
+      last: 'Doe',
+    },
+  },
+})
+```
+
+#### `form.resetAt(path, nextInitialValue?)`
+
+```ts
+type ResetAt<T> = <P extends string>(
+  path: P,
+  nextInitialValue?: PartialDeep<Get<T, P>>, // strongly typed: value will be inferred from path
+): void
+
+// Usage:
+// reset to current initial value
+form.resetAt('user.name.first')
+form.resetAt('user.name')
+
+// reset to new initial value
+form.resetAt('user.name.first', 'John')
+form.resetAt('user.name', {
+  first: 'John',
+  last: 'Doe',
+})
+```
+
+#### `form.blur(path)`
+
+After a property has gained focus, blurring it marks the property as "not active" − see [`isActive(path?)`](formisactivepath).
+
+:warning: Should be called only for primitive properties like string, number, date or booleans.
+
+```ts
+type Blur = (path: string) => void
+
+// Usage:
+form.blur('user.name.first')
+form.blur('user.name.last')
+```
+
+#### `form.focus(path)`
+
+Focusing a property marks it as visited and active − see [`isVisited(path?)`](#formisvisitedpath) and [`isActive(path?)`](#formisactivepath).
+
+:warning: Should be called only for primitive properties like string, number, date or booleans.
+
+```ts
+type Blur = (path: string) => void
+
+// Usage:
+form.focus('user.name.first')
+form.focus('user.name.last')
+```
+
+#### `form.on(event, listener)` / `form.on(path, event, listener)`
+
+**NB:** The `path` is not relevant for `'validated'` event
+
+```ts
+interface On {
+  on(
+    event: 'change' | 'blur' | 'focus' | 'reset' | 'validated',
+    listener: () => void,
+  ): void
+  on(
+    path: string,
+    event: 'change' | 'blur' | 'focus' | 'reset' | 'validated',
+    listener: () => void,
+  ): void
+}
+
+// Usage:
+// 'change' examples
+form.on('change', () => console.log('form value changed'))
+form.on('user.name', 'change' () => console.log('form user name changed'))
+form.on('user.name.first', 'change' () => console.log('form user first name changed'))
+
+// 'blur' examples
+form.on('blur', () => console.log('A form nested property has been blurred'))
+form.on('user.name', 'blur' () => console.log('user first or last name has been blurred'))
+form.on('user.name.first', 'blur' () => console.log('user first name has been blurred'))
+
+// 'validated' examples − the path is not relevant here
+form.on('validated', () => console.log('Form has been validated'))
+form.on('user.name', 'validated' () => console.log('form has been validated'))
+form.on('user.name.first', 'validated' () => console.log('form has been validated'))
+```
+
+#### `form.off(event, listener)`
+
+```ts
+type Off = (event: FormEvent, listener: () => void) => void
 
 // Usage
-const fieldOne = object({ name: string() })
-const fieldTwo = object({ birthDate: date() })
-const field = merge(fieldOne, fieldTwo) // ObjectField<{ name: string } & { birthDate: Date }>
+const listener = () => console.log('value changed')
+form.on('change', listener)
+form.off('change', listener)
+
+form.on('user.name.first', 'change', listener)
+form.off('change', listener) // path is not required
+
+form.on('user.name', 'change', listener)
+form.off('change', listener) // path is not required
 ```
 
-#### `array()`
+#### `form.validate()`
+
+Populates form error with − your − `ValidationErrors` or `undefined`
 
 ```ts
-const array = <T extends any[]>(
-  field: Field<T[number]>, /* basically: a field matching the array item value */
-  options: {
-    validators?: Validator<T>[], // Array<(value: T) => ValidationError[]>
-    validateAsync?: (value: T) => Promise<ValidationError[]>
-    /**
-     * `onInit` is triggered when fields are created, which might happen multiple times for optional/nullable object fields
-     * It allows to register event listeners for instance
-     */
-    onInit?: (field: ArrayField<T>) => void
-  },
-): /* …internal mechanism then … */ ArrayField<T> => {…}
+type Validate = () => void
 
-interface ArrayField<Value extends any[]> extends BaseField<Value> {
-  fields:
-    | undefined /* when value is undefined */
-    | null /* when value is null */
-    | Field<Value[number]>[] /* basically: a field for each array item */
-  validated: Promise<void> // useful only when `validateAsync` is provided
+// Usage:
+form.validate()
+```
 
-  add(item: Value[number], index?: number): void
-  remove(index: number): void
-  move(index: number, targetIndex: number): void
+#### `form.errors()`
+
+```ts
+type Errors<ValidationErrors> = () => ValidationErrors | undefined
+
+// Usage:
+form.errors() // your error value or `undefined`
+```
+
+#### `form.isValid()`
+
+Returns `true` when `form.errors()` is `undefined`. Basically.
+
+```ts
+type IsValid = () => boolean
+
+// Usage:
+form.validate() // sets the error
+if (!form.isValid()) {
+  throw new Error('…')
 }
 ```
 
-### Validation
+#### `submit(handler)`
 
-### `ValidationError` (type)
-
-```ts
-interface ValidationError {
-  type: string
-  [Key: string]: any // any data you want, only 'type' is required
-}
-```
-
-### `errorType` − built-in error types
+**NB:** Under the hood, it validates the form − if a `validate` function was provided −, and executes the handler **only** if the form is valid.
 
 ```ts
-const errorType = {
-  mustBeNotNil: 'mustBeNotNil',
-  mustBeString: 'mustBeString',
-  mustHaveMinLength: 'mustHaveMinLength',
-  mustHaveMaxLength: 'mustHaveMaxLength',
-  mustBeOneOf: 'mustBeOneOf',
-  mustBeNumber: 'mustBeNumber',
-  mustBeDate: 'mustBeDate',
-  mustBeBoolean: 'mustBeBoolean',
-}
-```
+export type Submit<T> = (handler: (value: T) => Promise<any>) => Promise<void>
 
-### `makeValidator()`
-
-```ts
-import { makeValidator } from 'formacy'
-import isEmail from 'is-email'
-
-export const mustBeEmail = () =>
-  makeValidator(
-    isEmail, // predicate, return true for a valid value
-    (value) => ({ type: 'mustBeEmail', value }), // validation error, only 'type' is required
-  )
-
-// To avoid typo issues, you should probably make the error type a constant:
-export const mustBeEmailErrorType = 'mustBeEmail'
-// or
-mustBeEmail.type = 'mustBeEmail'
-```
-
-### `mustHaveMinLength()`
-
-```ts
-import { mustHaveMinLength, form, array, string, number } from 'formacy'
-
-const makeForm = form({
-  schema: object({
-    demo: array(number(), { validators: [mustHaveMinLength(5)] })
-    name: string(mustHaveMinLength(3)),
-  }),
+// Usage:
+await form.submit(async (values) => {
+  const response = await fetch('/users', {
+    method: 'POST',
+    body: JSON.stringify({
+      firstName: values.user.name.first,
+      lastName: values.user.name.last,
+    }),
+  })
+  if (!response.ok) throw new Error('Received an error')
 })
-const myForm = makeForm({ demo: [1, 2, 3], name: 'Jake' })
-myForm.validate()
-myForm.errors[0]
-// { type: 'mustHaveMinLength', value: [1, 2, 3], min: 5 }
-myForm.errors[1]
-// { type: 'mustHaveMinLength', value: 'Jake', min: 5 }
 ```
 
-### `mustHaveMaxLength()`
+### Helpers
+
+**NB**: The lib is tree-shakeable. Therefore if you don’t use any of these, they won’t jump into your bundle :wink:
+
+#### `add(array, value, atIndex?)`
 
 ```ts
-import { mustHaveMaxLength, form, array, string, number } from 'formacy'
+import { add } from 'flemme'
 
-const makeForm = form({
-  schema: object({
-    demo: array(number(), { validators: [mustHaveMaxLength(3)] })
-    name: string(mustHaveMaxLength(3)),
-  }),
-})
-const myForm = makeForm({ demo: [1, 2, 3, 4], name: 'Cesare' })
-myForm.validate()
-myForm.errors[0]
-// { type: 'mustHaveMaxLength', value: [1, 2, 3, 4], max: 3 }
-myForm.errors[1]
-// { type: 'mustHaveMaxLength', value: 'Cesare', max: 3 }
+const myArray = ['a', 'b', 'c', 'd']
+const myNewArray1 = add(myArray, 'e') // append 'e'
+const myNewArray2 = add(myArray, 'e', 2) // ['a', 'b', 'e', 'c', 'd']
+```
+
+#### `remove(array, index)`
+
+```ts
+import { remove } from 'flemme'
+
+const myArray = ['a', 'b', 'c', 'd']
+const myNewArray1 = remove(myArray, 2) // removes 'c' → ['a', 'b', 'd']
+const myNewArray2 = remove(myArray, 123) // removes nothing
+const myNewArray3 = remove(myArray, -1) // removes nothing
 ```

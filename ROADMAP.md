@@ -1,28 +1,8 @@
 # ROADMAP
 
-- [x] Replace `Nothing` by `undefined` because it actually is an acceptable value, mark initial value as possibly `undefined` in `BaseField` because it's true and valid.
-- [x] Add `active` to `BaseField`, implement it for objects and array
-- [x] Remove export of `composeValidate`, use it internally and use array arguments
-- [x] Externalise errors messages, allow to customize them
-- [x] Create `merge(...objectFields)` utility
-- [x] `ObjectField` and `ArrayField` errors should not forward inner fields error
-- [x] `form({ fields: {} })` -> `form({ schema: FieldFactory<?> })`
-- [x] Remove `form` from each field. It was a bad idea.
-- [x] Add a lodash path (`name` ?) to each field at creation (internal mechanism)
-- [x] Handle `required` validation **inside** library as an internal mechanism, make `optional()` and `nullable()` deactivate that mechanism
-- [x] Form: add `getErrors()` message
-- [x] Make array & object getters lazy + flush
-- [x] Add ESLint + Lint Staged
-- [x] Test build by importing lib from elsewhere
-- [x] Enforce typings
-- [x] Re-commit lib as sacdenoeuds
-- [x] Add InferValue `(...args) => BaseDescriptor<infer V>`
-- [x] Add `lazyUntil` in internals
-- [x] Remove form `submitState`, keep only `getErrors()`
-- [x] Add injected data `valdidateOn: EventName[]`
-- [x] Validation: use error code, not message
-- [x] Handle async validation
-- [x] Add basic documentation, API + examples
-- [ ] Create demos
+- [x] Create demos
+- [x] react hooks bindings
+- [x] react class components bindings
+- [x] create lib for react bindings
 - [ ] Publish package
-- [ ] Add export map + react bindings
+- [ ] Deploy demos

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite App</title>
+  </head>
+  <body>
+    <div class="app">
+      <form class="form" id="register-form">
+        <div class="dimmer" style="display: none"></div>
+        <h2>Registration form</h2>
+        <p>Open console to see submitted values 😉</p>
+        <label>
+          User name
+          <input name="username" />
+          <small class="feedback-info">Between 4 and 233 characters</small>
+          <small id="username-error" class="feedback-error"></small>
+        </label>
+
+        <label>
+          Password
+          <input type="password" name="password" />
+          <small class="feedback-info">Between 4 and 233 characters</small>
+          <small id="password-error" class="feedback-error"></small>
+        </label>
+
+        <label>
+          Confirm password
+          <input type="password" name="confirmation" />
+          <small class="feedback-info">Between 4 and 233 characters</small>
+          <small id="confirmation-error" class="feedback-error"></small>
+        </label>
+
+        <div style="text-align: center">
+          <button type="submit">Submit</button>
+        </div>
+      </form>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+    <script defer asyn src="https://cdn.jsdelivr.net/npm/promisedip@1.1.5/lib/PromisePool.umd.min.js"></script>
+  </body>
+</html>
