@@ -77,11 +77,11 @@ export const RegisterForm: FC<Props> = ({ initialValue, onRegister = register })
       </label>
 
       <UseField form={form} path={'requirements'}>
-        {({ path, value }) => (
+        {({ path, value, change }) => (
           <fieldset>
             <legend>
               {'Requirements '}
-              <button type="button" onClick={() => add(value, '')}>
+              <button type="button" onClick={() => change(add(value, ''))}>
                 {'+'}
               </button>
             </legend>
@@ -91,7 +91,7 @@ export const RegisterForm: FC<Props> = ({ initialValue, onRegister = register })
                 <div style={{ display: 'flex' }}>
                   <TextInput form={form} path={`${path}.${index}`} />
                   &nbsp;
-                  <button style={{ flex: 1 }} type="button" onClick={() => remove(value, index)}>
+                  <button style={{ flex: 1 }} type="button" onClick={() => change(remove(value, index))}>
                     {'×'}
                   </button>
                 </div>

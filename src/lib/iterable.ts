@@ -23,4 +23,4 @@ export const add = <T>(value: PartialDeep<T>[] | undefined = [], item: PartialDe
   ...value.slice(atIndex),
 ]
 
-export const remove = <T>(value: T[], atIndex: number) => value.filter((_, index) => index !== atIndex)
+export const remove = <T>(value: PartialDeep<T>[] | undefined, atIndex: number) => value?.filter((_, index) => index !== atIndex)
