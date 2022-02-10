@@ -17,9 +17,11 @@ const paths = {
 fs.rmSync(paths.output(), { recursive: true, force: true })
 fs.mkdirSync(paths.output())
 
+cp.execSync('cp ./lib/esm/stats.html ./build/stats.html')
+
 Object.values(paths.bindings).forEach((bindingFolder) => {
   debug(`\n\n--- Install & build bindings/${path.basename(bindingFolder())} ---`)
-  cp.execSync('npm i && NODE_ENV=production npm run build', {
+  cp.execSync(`NODE_ENV=production npm run build && cp ./build/esm/stats.html ../../build/${path.basename(bindingFolder())}-stats.html`, {
     cwd: bindingFolder(),
     stdio: 'inherit',
   })
@@ -28,7 +30,7 @@ Object.values(paths.bindings).forEach((bindingFolder) => {
 const folders = ['with-react', 'with-superstruct', 'with-yup', 'with-zod']
 folders.forEach((folder) => {
   debug(`\n\n--- Install & build demo/${path.basename(paths.folder(folder))} ---`)
-  cp.execSync('npm ci && npm run build', { cwd: paths.folder(folder), stdio: 'inherit' })
+  cp.execSync('npm run build', { cwd: paths.folder(folder), stdio: 'inherit' })
   cp.execSync(`cp -R ${paths.folder(folder)}/dist ${paths.output()}/${folder}`, { stdio: 'inherit' })
 })
 
@@ -44,4 +46,4 @@ gh.publish(
   },
 )
 
-cp.execSync('rm -rf ./bindings/*/node_modules ./demo/*/node_modules', { stdio: 'inherit' })
+// cp.execSync('rm -rf ./bindings/*/node_modules ./demo/*/node_modules', { stdio: 'inherit' })
