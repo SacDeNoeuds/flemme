@@ -1,8 +1,8 @@
 # Flemme
 
-Hopefully − the cure to (complex) forms
+Dependency-free\* framework-agnostic form management
 
-Framework-agnostic form management
+<small>\* See installation steps</small>
 
 ---
 
