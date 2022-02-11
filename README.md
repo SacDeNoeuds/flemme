@@ -1,3 +1,9 @@
+[![npm version](https://badge.fury.io/js/flemme.svg)](https://badge.fury.io/js/flemme)
+[![Downloads](https://img.shields.io/npm/dm/flemme.svg)](https://www.npmjs.com/package/flemme)
+[![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg)](http://standardjs.com)
+
+<!-- [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/SacDeNoeuds) -->
+
 # Flemme
 
 Dependency-free\* framework-agnostic form management

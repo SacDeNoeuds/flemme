@@ -1,6 +1,12 @@
+[![npm version](https://badge.fury.io/js/flemme-react.svg)](https://badge.fury.io/js/flemme-react)
+[![Downloads](https://img.shields.io/npm/dm/flemme-react.svg)](https://www.npmjs.com/package/flemme-react)
+[![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg)](http://standardjs.com)
+
+<!-- [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/SacDeNoeuds) -->
+
 # flemme-react
 
-React bindings for `flemme`
+React bindings for [`flemme`](../..)
 
 ## Table of contents
 
