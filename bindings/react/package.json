@@ -1,6 +1,6 @@
 {
   "name": "flemme-react",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "React bindings for flemme",
   "module": "build/esm/main.js",
   "types": "build/esm/main.d.ts",
