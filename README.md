@@ -154,6 +154,7 @@ const makeForm = makeLib({
 
 ```ts
 // src/path/to/user-form.(js|ts)
+import { add, remove /* for arrays */ } from 'flemme'
 import { makeForm } from 'path/to/lib/form'
 
 export const makeUserProfileForm = (initialValue) => makeForm({
@@ -163,11 +164,13 @@ export const makeUserProfileForm = (initialValue) => makeForm({
 })
 
 const validateUserProfileForm = (value) => {
-  const errors = [] // not necessarily an array, the data type of your choice ; who am I to tell you what data type best suits your need ?
+  // NOTE: not necessarily an array, the data type of your choice
+  // who am I to tell you what data type best suits your need ?
+  const errors = []
 
   if (!value.name) errors.push({ code: 'name is required' })
   return errors.length === 0
-    ? undefined // IMPORTANT: that's how the lib knows the form is valid
+    ? undefined // NOTE: that's how the lib knows the form is valid
     : errors
 }
 
@@ -190,9 +193,13 @@ form.focus('tags.1')
 form.change('tags.1', 'great dancer') // replaces "great dude" by "great dancer"
 form.blur('tags.1')
 
-// Handle array additions & deletion at array-level
-// Avoid using form.change('tags.2', 'Kind hearted') to append a value
-form.change('tags', [...form.value('tags'), 'Kind hearted'])
+// Array add/append value
+form.change('tags.2', 'Lovely') // since index 2 does not exist, it will be added
+form.change('tags', add(form.value('tags'), 'Kind hearted')) // append tag
+form.change('tags', add(form.value('tags'), 'Subtle guy', 1)) // add at index 1
+
+// Array remove value
+form.change('tags', remove(form.value('tags'), 1)) // remove tag at index 1
 
 form.submit(async (values) => { await fetch('…', {}) })
   .then(() => {…})
