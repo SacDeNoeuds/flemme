@@ -4,6 +4,10 @@
   "description": "React bindings for flemme",
   "module": "build/esm/main.js",
   "types": "build/esm/main.d.ts",
+  "files": [
+    "build/",
+    "src/"
+  ],
   "scripts": {
     "build": "rollup -c ./rollup.config.js",
     "test": "echo \"Error: no test specified\" && exit 1"
