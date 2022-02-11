@@ -8,11 +8,27 @@
     "build/",
     "src/"
   ],
+  "exports": {
+    ".": {
+      "import": "./build/esm/main.js"
+    }
+  },
   "scripts": {
     "build": "rollup -c ./rollup.config.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "SacDeNoeuds <tojumster@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:SacDeNoeuds/flemme.git"
+  },
+  "keywords": [
+    "flemme",
+    "form",
+    "form manager",
+    "form state",
+    "react"
+  ],
   "license": "MIT",
   "peerDependencies": {
     "flemme": ">=0.1.0",
