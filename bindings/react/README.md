@@ -6,7 +6,7 @@
 
 # flemme-react
 
-React bindings for [`flemme`](../..)
+React bindings for [`flemme`](../../../../)
 
 ## Table of contents
 
