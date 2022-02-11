@@ -148,7 +148,7 @@ const makeForm = makeLib({
 
 **TS users**: Enabling proper types requires TS v4.1+ and type-fest v0.21+
 
-**React users**: check out the React binding package [`flemme-react`](/bindings/react/)
+**React users**: check out the React binding package [`flemme-react`](https://github.com/SacDeNoeuds/flemme/tree/main/bindings/react)
 
 ## Basic usage
 
