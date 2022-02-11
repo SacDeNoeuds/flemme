@@ -16,9 +16,9 @@ Table of contents:
 
 - [Installation](#installation)
 - [Basic usage](#basic-usage)
-- [Philosophy](#philosophy)
 - [Limitations](#limitations)
 - [Demos](#demos)
+- [Philosophy](#philosophy)
 - [API](#api)
   - [`makeLib({ get, set, isEqual, cloneDeep })`](#makelib-get-set-isequal-clonedeep-)
   - [`makeForm<T>({ initial, validate?, validationTriggers? })`](#makeformt-initial-validate-validationtriggers-)
@@ -199,13 +199,24 @@ form.submit(async (values) => { await fetch('…', {}) })
   .catch(() => {…})
 ```
 
+## Limitations
+
+:warning: The top-level value _must_ be an object or an array
+
+## Demos
+
+- With `superstruct` validation: [demo](https://sacdenoeuds.github.io/flemme/with-superstruct/) | [source](https://github.com/SacDeNoeuds/flemme/blob/main/with-superstruct)
+- With `yup` validation: [demo](https://sacdenoeuds.github.io/flemme/with-yup/) | [source](https://github.com/SacDeNoeuds/flemme/blob/main/with-yup)
+- With React: [demo](https://sacdenoeuds.github.io/flemme/with-react/) | [source](https://github.com/SacDeNoeuds/flemme/blob/main/with-react)
+
 ## Philosophy
 
-I think handling forms means two main subjects:
+I think handling forms means two main parts:
 
 1. Form **state**, such as dirty/pristine, touched/modified, visited, active and state mutations
 2. Form **validation**
-   And of course, then it has to be testable…
+
+And it should have to be testable in any environment (browser, node, deno, etc.).
 
 About form **validation**, there already exist wonderful tools to validate schema or even add cross-field validation, the idea is to _not_ reimplement one. Among those tools:
 
@@ -221,16 +232,6 @@ About form **state**, I figured that in every project at some point we use a uti
 Plus since TypeScript v4.1, lodash-path related function can be typed strongly, so using lodash-like path felt like a commonly known API to propose.
 
 Now you ought to know (if you don’t yet): a great framework-agnostic form library already exists: [final-form](https://final-form.org/). However, I find the API and config not to be _that_ straightforward. FYI, it’s 16.9kB and has a separate package for arrays while this one is 1.82KB … not counting that you have to bring your own set/get/isEqual functions ; but as mentioned above, you usually already have them in your project. Another advantage of final-form is its very [complete ecosystem](https://final-form.org/docs/final-form/companion-libraries).
-
-## Limitations
-
-:warning: The top-level value _must_ be an object or an array
-
-## Demos
-
-- With `superstruct` validation: [demo](https://sacdenoeuds.github.io/flemme/with-superstruct/) | [source](https://github.com/SacDeNoeuds/flemme/blob/main/with-superstruct)
-- With `yup` validation: [demo](https://sacdenoeuds.github.io/flemme/with-yup/) | [source](https://github.com/SacDeNoeuds/flemme/blob/main/with-yup)
-- With React: [demo](https://sacdenoeuds.github.io/flemme/with-react/) | [source](https://github.com/SacDeNoeuds/flemme/blob/main/with-react)
 
 ## API
 
