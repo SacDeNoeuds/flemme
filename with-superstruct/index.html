@@ -5,16 +5,16 @@
     <link rel="icon" type="image/svg+xml" href="/flemme/with-superstruct/assets/favicon.17e50649.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>With Superstruct</title>
-    <script type="module" crossorigin src="/flemme/with-superstruct/assets/index.2a42c5b5.js"></script>
+    <script type="module" crossorigin src="/flemme/with-superstruct/assets/index.de665964.js"></script>
     <link rel="modulepreload" href="/flemme/with-superstruct/assets/vendor.6a681271.js">
-    <link rel="stylesheet" href="/flemme/with-superstruct/assets/index.30d20c8c.css">
+    <link rel="stylesheet" href="/flemme/with-superstruct/assets/index.43f253d9.css">
   </head>
   <body>
     <div class="app">
       <form class="form" id="register-form">
         <div class="dimmer" style="display: none"></div>
         <h2>Registration form</h2>
-        <p>Open console to see submitted values 😉</p>
+        <p>Validated with <a href="https://docs.superstructjs.org/">superstruct</a> 😉</p>
         <label>
           User name
           <input name="username" />
@@ -40,6 +40,9 @@
           <button type="submit">Submit</button>
         </div>
       </form>
+
+      <h4>Last submitted values:</h4>
+      <pre><code id="output"></code></pre>
     </div>
     
     <script defer async src="https://cdn.jsdelivr.net/npm/promisedip@1.1.5/lib/PromisePool.umd.min.js"></script>
