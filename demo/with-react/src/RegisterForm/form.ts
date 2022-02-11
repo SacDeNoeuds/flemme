@@ -1,6 +1,6 @@
 /* eslint-disable import/no-unresolved */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { type Describe, object, size, string, array } from 'superstruct'
+import { type Describe, object, size, string, array, optional } from 'superstruct'
 import { type Validate } from 'flemme'
 import { type PartialDeep } from 'type-fest'
 import { makeForm } from '../lib/form'
@@ -10,14 +10,14 @@ export type FormValues = {
   username: string
   password: string
   confirmation: string
-  requirements: string[]
+  requirements?: string[]
 }
 
 const schema: Describe<FormValues> = object({
   username: size(string(), 4, 233),
   password: size(string(), 4, 233),
   confirmation: size(string(), 4, 233),
-  requirements: array(size(string(), 6, 20)),
+  requirements: optional(array(size(string(), 3, 20))),
 })
 
 export type ValidationError = {
@@ -29,7 +29,6 @@ const errorCode = {
   passwordMismatch: 'passwordMismatch',
 }
 const validate: Validate<ValidationError[], FormValues> = (values) => {
-  // console.info('validate', values)
   const [structErrors] = schema.validate(values)
   if (structErrors) {
     return structErrors.failures().map<ValidationError>((failure) => ({

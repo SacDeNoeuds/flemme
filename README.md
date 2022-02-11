@@ -228,10 +228,9 @@ Now you ought to know (if you don’t yet): a great framework-agnostic form libr
 
 ## Demos
 
-- [With `superstruct` validation](https://sacdenoeuds.github.io/flemme/with-superstruct/)
-- [With `yup` validation](https://sacdenoeuds.github.io/flemme/with-yup/)
-- [With `zod` validation](https://sacdenoeuds.github.io/flemme/with-zod/)
-- [With React](https://sacdenoeuds.github.io/flemme/with-react/)
+- With `superstruct` validation: [demo](https://sacdenoeuds.github.io/flemme/with-superstruct/) | [source](https://github.com/SacDeNoeuds/flemme/blob/main/with-superstruct)
+- With `yup` validation: [demo](https://sacdenoeuds.github.io/flemme/with-yup/) | [source](https://github.com/SacDeNoeuds/flemme/blob/main/with-yup)
+- With React: [demo](https://sacdenoeuds.github.io/flemme/with-react/) | [source](https://github.com/SacDeNoeuds/flemme/blob/main/with-react)
 
 ## API
 

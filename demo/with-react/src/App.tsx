@@ -5,7 +5,9 @@ function App() {
   return (
     <div className="app">
       <h2>Registration form</h2>
-      <p>Open console to see submitted values 😉</p>
+      <p>
+        Build with <a href="https://reactjs.org/">React</a> and <a href="https://docs.superstructjs.org/">superstruct</a> 😉
+      </p>
       <RegisterForm />
     </div>
   )

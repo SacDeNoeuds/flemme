@@ -1,6 +1,7 @@
+/* eslint-disable import/no-unresolved */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import * as z from 'zod'
 import { type Form, type Validate } from 'flemme'
+import { z } from 'zod'
 import { makeForm } from './lib/form'
 import { ensureDefined } from './lib/assert'
 import { sleep } from './lib/sleep'

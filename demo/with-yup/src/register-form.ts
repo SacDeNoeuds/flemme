@@ -55,6 +55,8 @@ export const registerForm = () => {
 export const register = async (values: FormValues) => {
   await sleep(750)
   console.info('Submitted:', values)
+  const output = ensureDefined(document.querySelector<HTMLElement>('#output'), 'output should be defined')
+  output.innerText = JSON.stringify(values, null, 2)
 }
 
 const errorMessageByCode: Record<string, string> = {

@@ -13,7 +13,7 @@ code {
 .app {
   max-width: 40em;
   margin: auto;
-  padding: 1rem 0;
+  padding: 1rem;
   --borderColor: #9a9a9a;
   --primaryColor: lightsteelblue;
   --primaryDarkColor: steelblue;

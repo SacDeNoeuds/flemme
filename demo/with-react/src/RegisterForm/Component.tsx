@@ -24,6 +24,7 @@ export const RegisterForm: FC<Props> = ({ initialValue, onRegister = register })
 
   const submit = (event: FormEvent) => {
     event.preventDefault()
+    console.info('form errors', errors)
     form.submit((values) => {
       setSubmitState(SubmitState.Pending)
       return onRegister(values)
@@ -33,79 +34,88 @@ export const RegisterForm: FC<Props> = ({ initialValue, onRegister = register })
   }
 
   return (
-    <form onSubmit={submit} className="form">
-      <label>
-        Submission state: {submitState}
-        <br />
-        Form validity: {errors.length > 0 ? 'Invalid' : 'Valid'}
-      </label>
+    <>
+      <form onSubmit={submit} className="form">
+        <label>
+          Submission state: {submitState}
+          <br />
+          Form validity: {errors.length > 0 ? 'Invalid' : 'Valid'}
+        </label>
 
-      <label>Dirty: {JSON.stringify(isFormDirty)}</label>
+        <label>Dirty: {JSON.stringify(isFormDirty)}</label>
 
-      {submitState === SubmitState.Pending && <div className="dimmer" />}
+        {submitState === SubmitState.Pending && <div className="dimmer" />}
 
-      <label>
-        {'Name'}
-        <TextInput form={form} path={'username'} />
-        <Errors form={form} path={'username'} errors={errors} />
-      </label>
+        <label>
+          {'Name'}
+          <TextInput form={form} path={'username'} />
+          <small className="feedback-info">Between 4 and 233 characters</small>
+          <Errors form={form} path={'username'} errors={errors} />
+        </label>
 
-      <label>
-        {'Password'}
-        {/* <TextInput type="password" form={form} path={'password'} /> */}
-        <UseField form={form} path={'password'} watch={['value']}>
-          {({ path, value, change, focus, blur }) => (
-            <input
-              data-test={console.info({ path, value })}
-              type="password"
-              value={value ?? ''}
-              onChange={(event) => {
-                change((event.target.value as any) || undefined)
-              }}
-              onFocus={focus}
-              onBlur={blur}
-            />
+        <label>
+          {'Password'}
+          <UseField form={form} path={'password'} watch={['value']}>
+            {({ path, value, change, focus, blur }) => (
+              <input
+                type="password"
+                name={path}
+                value={value ?? ''}
+                onChange={(event) => {
+                  change((event.target.value as any) || undefined)
+                }}
+                onFocus={focus}
+                onBlur={blur}
+              />
+            )}
+          </UseField>
+          <small className="feedback-info">Between 4 and 233 characters</small>
+          <Errors form={form} path={'password'} errors={errors} />
+        </label>
+
+        <label>
+          {'Confirm password'}
+          <TextInput type="password" form={form} path={'confirmation'} />
+          <small className="feedback-info">Between 4 and 233 characters</small>
+          <Errors form={form} path={'confirmation'} errors={errors} />
+        </label>
+
+        <UseField form={form} path={'requirements'}>
+          {({ path, value, change }) => (
+            <fieldset>
+              <legend>
+                {'Requirements '}
+                <button type="button" onClick={() => change(add(value, ''))}>
+                  {'+'}
+                </button>
+              </legend>
+              {value?.map((_, index) => (
+                <label key={index}>
+                  {`#${index + 1} `}
+                  <div style={{ display: 'flex' }}>
+                    <TextInput form={form} path={`${path}.${index}`} />
+                    &nbsp;
+                    <button style={{ flex: 1 }} type="button" onClick={() => change(remove(value, index))}>
+                      {'×'}
+                    </button>
+                  </div>
+                  <small className="feedback-info">Between 3 and 20 characters</small>
+                  <Errors form={form} path={`${path}.${index}`} errors={errors} />
+                </label>
+              ))}
+            </fieldset>
           )}
         </UseField>
-        <Errors form={form} path={'password'} errors={errors} />
-      </label>
 
-      <label>
-        {'Confirm password'}
-        <TextInput type="password" form={form} path={'confirmation'} />
-        <Errors form={form} path={'confirmation'} errors={errors} />
-      </label>
-
-      <UseField form={form} path={'requirements'}>
-        {({ path, value, change }) => (
-          <fieldset>
-            <legend>
-              {'Requirements '}
-              <button type="button" onClick={() => change(add(value, ''))}>
-                {'+'}
-              </button>
-            </legend>
-            {value?.map((_, index) => (
-              <label key={index}>
-                {`#${index + 1} `}
-                <div style={{ display: 'flex' }}>
-                  <TextInput form={form} path={`${path}.${index}`} />
-                  &nbsp;
-                  <button style={{ flex: 1 }} type="button" onClick={() => change(remove(value, index))}>
-                    {'×'}
-                  </button>
-                </div>
-                <Errors form={form} path={`${path}.${index}`} errors={errors} />
-              </label>
-            ))}
-          </fieldset>
-        )}
-      </UseField>
-
-      <div style={{ textAlign: 'center' }}>
-        <button type="submit">{'Submit'}</button>
-      </div>
-    </form>
+        <div style={{ textAlign: 'center' }}>
+          <button type="submit">{'Submit'}</button>
+        </div>
+      </form>
+      <h4>Last successful submitted result:</h4>
+      <pre>
+        <code>{submitState === SubmitState.Success && JSON.stringify(form.value(), null, 2)}</code>
+      </pre>
+    </>
   )
 }
 
