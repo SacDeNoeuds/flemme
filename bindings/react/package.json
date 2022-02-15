@@ -20,7 +20,7 @@
   "author": "SacDeNoeuds <tojumster@gmail.com>",
   "repository": {
     "type": "git",
-    "url": "git@github.com:SacDeNoeuds/flemme.git"
+    "url": "https://github.com/SacDeNoeuds/flemme/blob/main/bindings/react"
   },
   "keywords": [
     "flemme",
