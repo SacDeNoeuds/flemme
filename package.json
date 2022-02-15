@@ -1,7 +1,7 @@
 {
   "name": "flemme",
   "version": "0.1.0",
-  "description": "Framework-agnostic form manager/handler/abstraction",
+  "description": "Framework agnostic form state manager / handler / abstraction",
   "main": "lib/cjs/main.js",
   "module": "lib/esm/main.js",
   "types": "lib/esm/main.d.ts",
@@ -31,6 +31,7 @@
     "form",
     "form manager",
     "form state",
+    "form handler",
     "vanilla",
     "vanilla.js"
   ],
