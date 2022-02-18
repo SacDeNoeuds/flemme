@@ -1,3 +1,5 @@
+![Flemme logo](https://github.com/SacDeNoeuds/flemme/blob/main/public/logo-200.png 'Flemme logo, obviously')
+
 [![npm version](https://badge.fury.io/js/flemme.svg)](https://badge.fury.io/js/flemme)
 [![Downloads](https://img.shields.io/npm/dm/flemme.svg)](https://www.npmjs.com/package/flemme)
 [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg)](http://standardjs.com)
@@ -9,6 +11,8 @@
 Dependency-free\* framework-agnostic form management
 
 <small>\* See installation steps</small>
+
+− “Flemme” means “Laziness” in French.
 
 ---
 

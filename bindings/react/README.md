@@ -1,3 +1,5 @@
+![Flemme <3 React logo](https://github.com/SacDeNoeuds/flemme/blob/main/public/logo-react-200.png 'Flemme <3 react logo, obviously')
+
 [![npm version](https://badge.fury.io/js/flemme-react.svg)](https://badge.fury.io/js/flemme-react)
 [![Downloads](https://img.shields.io/npm/dm/flemme-react.svg)](https://www.npmjs.com/package/flemme-react)
 [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg)](http://standardjs.com)
