@@ -1,6 +1,6 @@
 node_modules/
 coverage/
 build/
-packages/flemme/lib
+modules/flemme/lib
 dist/
 public/*.inkscape.*
