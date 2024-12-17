@@ -21,7 +21,7 @@ const plugins = (output) => [
     outDir: output,
     declaration: output === folders.esm,
     include: ['./src/**/*'],
-    exclude: ['./src/**/*.spec.*'],
+    exclude: ['./src/**/*.spec.*', './src/form-spec/*'],
     sourceMap: true,
   }),
   !isDebug && terser(),

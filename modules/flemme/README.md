@@ -185,9 +185,9 @@ import { createForm } from 'path/to/lib/form'
 
 export const makeUserProfileForm = (initialValue) => createForm({
   initial: initialValue,
+  submit: async (values) => { await fetch('…', {}) },
   validate: validateUserProfileForm,
   validationTriggers: ['change', 'blur', 'focus', 'reset', 'validated'], // all available triggers, pick only a subset of course (ideally one only)
-  submit: async () => { … }
 })
 
 const validateUserProfileForm = (value) => {
@@ -209,26 +209,26 @@ const form = makeUserProfileForm({
 
 // mimic actual user actions
 form.focus('name.first')
-form.change('name.first', 'Fred')
+form.set('name.first', 'Fred')
 form.blur('name.first')
 
 form.focus('name.last')
-form.change('name.last', 'Aster')
+form.set('name.last', 'Aster')
 form.blur('name.last')
 
 form.focus('tags.1')
-form.change('tags.1', 'great dancer') // replaces "great dude" by "great dancer"
+form.set('tags.1', 'great dancer') // replaces "great dude" by "great dancer"
 form.blur('tags.1')
 
 // Array add/append value
-form.change('tags.2', 'Lovely') // since index 2 does not exist, it will be added
-form.change('tags', add(form.value('tags'), 'Kind hearted')) // append tag
-form.change('tags', add(form.value('tags'), 'Subtle guy', 1)) // add at index 1
+form.set('tags.2', 'Lovely') // since index 2 does not exist, it will be added
+form.set('tags', add(form.value('tags'), 'Kind hearted')) // append tag
+form.set('tags', add(form.value('tags'), 'Subtle guy', 1)) // add at index 1
 
 // Array remove value
-form.change('tags', remove(form.value('tags'), 1)) // remove tag at index 1
+form.set('tags', remove(form.value('tags'), 1)) // remove tag at index 1
 
-form.submit(async (values) => { await fetch('…', {}) })
+form.submit()
   .then(() => {…})
   .catch(() => {…})
 ```
