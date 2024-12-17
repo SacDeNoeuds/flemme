@@ -10,22 +10,20 @@ export type FieldState<FormValues, Path extends Paths<FormValues>> = {
   initial: Get<FormValues, Path & string>
   isDirty: boolean
   isVisited: boolean
-  isActive: boolean
   change: (value: Get<FormValues, Path & string> | undefined) => void
   blur: () => void
   focus: () => void
   reset: (nextInitial?: Get<FormValues, Path & string>) => void
 }
 export type Watchable = Exclude<keyof FieldState<any, never>, 'path' | 'change' | 'blur' | 'focus' | 'reset'> | 'errors'
-const formEventsByWatchable: Record<Watchable, FormEvent[]> = {
+const formEventsByWatchable: Record<Watchable, Exclude<FormEvent, 'submit' | 'submitted'>[]> = {
   initial: ['reset'],
   value: ['change', 'reset'],
-  isActive: ['focus', 'blur'],
   isDirty: ['change', 'reset'],
   isVisited: ['focus', 'reset'],
   errors: ['validated'],
 }
-const formEvents: FormEvent[] = ['reset', 'validated', 'change', 'blur', 'focus']
+const formEvents: Exclude<FormEvent, 'submit' | 'submitted'>[] = ['reset', 'validated', 'change', 'blur', 'focus']
 
 type Props<FormValues, Path extends Paths<FormValues>, ValidationErrors> = {
   form: Form<FormValues, ValidationErrors>
@@ -48,12 +46,11 @@ export class UseField<FormValues, Path extends Paths<FormValues>, ValidationErro
     const { form, path } = this.props
     return {
       path,
-      value: form.value(path),
-      initial: form.initial(path),
-      isDirty: form.isDirty(path),
+      value: form.get(path),
+      initial: form.getInitial(path),
+      isDirty: form.isDirtyAt(path),
       isVisited: form.isVisited(path),
-      isActive: form.isActive(path),
-      change: (value) => form.change(path, value),
+      change: (value) => form.set(path, value),
       blur: () => form.blur(path),
       focus: () => form.focus(path),
       reset: (nextInitial?: any) => form.resetAt(path, nextInitial),
@@ -66,7 +63,7 @@ export class UseField<FormValues, Path extends Paths<FormValues>, ValidationErro
 
   componentDidMount() {
     const { form, path } = this.props
-    this.subscribers = this.watchers.map((formEvent) => form.on(path, formEvent, this.setFieldState))
+    this.subscribers = this.watchers.map((formEvent) => form.on(formEvent as any, path, this.setFieldState))
   }
 
   componentWillUnmount() {

@@ -1,41 +1,42 @@
-/* eslint-disable security/detect-object-injection */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // import type { FormEvent, Form } from 'flemme'
 import type { Form, FormEvent } from 'flemme'
 import { useEffect, useState } from 'react'
-import type { Get, PartialDeep, Paths } from 'type-fest'
+import type { Get, Paths } from 'type-fest'
 
-type Method = Extract<
-  keyof Form<any>,
-  'isDirty' | 'isActive' | 'isVisited' | 'isModified' | 'isValid' | 'errors' | 'value' | 'initial'
->
-const makeHook = <M extends Method>(method: M, events: FormEvent[]) => {
-  return <T, E, P extends Paths<T>>(form: Form<T, E>, path?: P): ReturnType<Form<T, E>[M]> => {
-    const operation = (form as any)[method] as (path?: P) => ReturnType<Form<T>[M]>
-    const [state, setState] = useState<ReturnType<Form<T>[M]>>(operation(path))
+function makeHook<U>(events: FormEvent[], getter: (form: Form<any, any>, path?: string) => U) {
+  return <T, P extends Paths<T>, Errs = any>(form: Form<T, Errs>, path?: P & string) => {
+    const [state, setState] = useState(getter(form, path))
 
     useEffect(() => {
-      const listener = () => setState(operation(path))
-      const subscribers = events.map((event) => (path ? form.on(path, event, listener) : form.on(event, listener)))
-      return () => subscribers.forEach((unsubscribe) => unsubscribe())
-    }, [path, operation, form])
+      const listener = () => setState(getter(form, path))
+      const subscribers = events.map((event) => {
+        return path ? form.on(event as any, path, listener) : form.on(event as any, listener)
+      })
+      return () => {
+        subscribers.forEach((unsubscribe) => unsubscribe())
+      }
+    }, [form, path])
 
     return state
   }
 }
 
-export const useVisited = makeHook('isVisited', ['focus', 'reset', 'validated'])
-export const useActive = makeHook('isActive', ['focus', 'blur', 'reset'])
-export const useDirty = makeHook('isDirty', ['change', 'reset'])
-export const useErrors = makeHook('errors', ['validated']) as <ValidationErrors>(
-  form: Form<any, ValidationErrors>,
-) => ValidationErrors
-export const useValid = makeHook('isValid', ['validated'])
-export const useValue = makeHook('value', ['change', 'reset']) as <T, P extends string>(
+export const useVisited = makeHook(['focus', 'reset', 'validated'], (form, path) => form.isVisited(path as never))
+export const useDirty = makeHook(['change', 'reset'], (form, path) =>
+  path ? form.isDirty : form.isDirtyAt(path as never),
+)
+export const useValue = makeHook(['change', 'reset'], (form, path) => form.get(path as never)) as <
+  T,
+  P extends Paths<T>,
+>(
   form: Form<T>,
-  path?: P,
-) => PartialDeep<Get<T, P>>
-export const useInitial = makeHook('initial', ['change', 'reset']) as <T, P extends string>(
+  path: P,
+) => Get<T, P & string>
+export const useInitial = makeHook(['change', 'reset'], (form, path) => form.getInitial(path as never)) as <
+  T,
+  P extends Paths<T>,
+>(
   form: Form<T>,
-  path?: P,
-) => PartialDeep<Get<T, P>>
+  path: P,
+) => Get<T, P & string>
