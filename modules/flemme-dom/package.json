@@ -1,0 +1,35 @@
+{
+  "name": "flemme-dom",
+  "version": "0.1.0",
+  "description": "DOM bindings for flemme",
+  "module": "build/esm/main.js",
+  "types": "build/esm/main.d.ts",
+  "type": "module",
+  "files": [
+    "build/"
+  ],
+  "exports": {
+    ".": {
+      "import": "./build/esm/main.js"
+    }
+  },
+  "scripts": {
+    "build": "rollup -c ./rollup.config.js"
+  },
+  "author": "SacDeNoeuds <sacdenoeuds.dev@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SacDeNoeuds/flemme/blob/main/bindings/dom"
+  },
+  "keywords": [
+    "flemme",
+    "dom"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "type-fest": "^4.30.1"
+  },
+  "peerDependencies": {
+    "flemme": "^0.3.0"
+  }
+}
