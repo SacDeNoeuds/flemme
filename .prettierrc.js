@@ -1,7 +1,7 @@
 'use strict'
 
 module.exports = {
-  printWidth: 180,
+  printWidth: 120,
   semi: false,
   singleQuote: true,
   quoteProps: 'consistent',

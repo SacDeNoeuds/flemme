@@ -1,0 +1,13 @@
+{
+  "name": "@flemme/demo-with-zod",
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build --base=/flemme/with-zod/",
+    "postbuild": "mv ./dist ../../public/with-zod"
+  },
+  "dependencies": {
+    "flemme": "^0.2.0",
+    "zod": "^3.24.1"
+  }
+}

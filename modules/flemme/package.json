@@ -1,0 +1,43 @@
+{
+  "name": "flemme",
+  "version": "0.2.0",
+  "description": "Framework agnostic form state manager / handler / abstraction",
+  "main": "lib/cjs/main.js",
+  "module": "lib/esm/main.js",
+  "types": "lib/esm/main.d.ts",
+  "type": "module",
+  "files": [
+    "lib/"
+  ],
+  "exports": {
+    ".": {
+      "import": "./lib/esm/main.js",
+      "require": "./lib/cjs/main.js"
+    }
+  },
+  "scripts": {
+    "prebuild": "rm -rf ./lib",
+    "build": "rollup -c ./rollup.config.js",
+    "check-ts": "npx tsc --noEmit",
+    "prepack": "npm run build",
+    "test": "vitest",
+    "coverage": "vitest --coverage",
+    "deploy:demo": "node ./deploy.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SacDeNoeuds/flemme.git"
+  },
+  "homepage": "https://github.com/SacDeNoeuds/flemme/tree/main/packages/flemme",
+  "keywords": [
+    "agnostic",
+    "form",
+    "form manager",
+    "form state",
+    "form handler",
+    "vanilla",
+    "vanilla.js"
+  ],
+  "author": "SacDeNoeuds <sacdenoeuds.dev@gmail.com>",
+  "license": "MIT"
+}

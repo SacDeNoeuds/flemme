@@ -1,0 +1,15 @@
+{
+  "name": "@flemme/demo-with-superstruct",
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build --base=/flemme/with-superstruct/",
+    "postbuild": "mv ./dist ../../public/with-superstruct"
+  },
+  "devDependencies": {
+    "superstruct": "^0.15.3"
+  },
+  "dependencies": {
+    "flemme": "^0.2.0"
+  }
+}
