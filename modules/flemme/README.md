@@ -17,7 +17,7 @@
 
   <img alt="bundle size" src="https://deno.bundlejs.com/badge?q=object-deep-copy,just-safe-get,just-safe-set,fast-deep-equal,flemme&treeshake=[{+default+as+objectDeepCopyDefault+}],[{+default+as+get+}],[{+default+as+set+}],[{+default+as+fastDeepEqual+}],[{+Flemme+}]">
 
-  <img alt="Total coverage" src="https://raw.githubusercontent.com/SacDeNoeuds/flemme/refs/heads/main/packages/flemme/badges/coverage-total.svg">
+  <img alt="Total coverage" src="https://raw.githubusercontent.com/SacDeNoeuds/flemme/refs/heads/main/modules/flemme/badges/coverage-total.svg">
 
   <img alt="Dependency Count" src="https://badgen.net/bundlephobia/dependency-count/flemme">
 </p>
