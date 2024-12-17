@@ -36,10 +36,11 @@ export type Form<T, ValidationErrors = any> = {
   readonly isValid: boolean
   readonly isDirty: boolean
 
-  get<P extends Paths<T>>(path: P): Get<T, P & string>
+  get: <P extends Paths<T>>(path: P) => Get<T, P & string>
+  getInitial: <P extends Paths<T>>(path: P) => Get<T, P & string>
 
-  isDirtyAt(path: Paths<T>): boolean
-  isVisited(path?: Paths<T>): boolean
+  isDirtyAt: (path: Paths<T>) => boolean
+  isVisited: (path?: Paths<T>) => boolean
 
   // actions/operations
   set: {
@@ -134,6 +135,7 @@ export function Flemme({ get, set, isEqual, cloneDeep }: FlemmeParams): CreateFo
       },
 
       get: (path: Paths<T>): any => get(values, path as string),
+      getInitial: (path: Paths<T>): any => get(initialValue, path as string),
 
       isDirtyAt: (path: Paths<T>) => !isEqual(get(values, path as string), get(initialValue, path as string)),
 

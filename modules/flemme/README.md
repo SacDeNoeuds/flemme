@@ -300,17 +300,19 @@ const createForm: <T, ValidationErrors>(options: {
 ```ts
 interface Initial<T> {
   readonly initialValues: T
+  getInitial<P extends Paths<T>>(path: P): Get<T, P>
 }
 
 // Usage:
 form.initialValues // form initial value
 form.initialValues.user.name.first // initial sub value
+form.getInitial('user.name.first') // string
 ```
 
 #### `form.values`
 
 ```ts
-interface Initial<T> {
+interface Values<T> {
   readonly values: T
 }
 
