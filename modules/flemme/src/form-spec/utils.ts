@@ -3,7 +3,6 @@ import fastDeepEqual from 'fast-deep-equal'
 import get from 'just-safe-get'
 import set from 'just-safe-set'
 import _ from 'lodash'
-import objectDeepCopy from 'object-deep-copy'
 import { Flemme } from '../make-form'
 
 export type FormMaker = keyof typeof make
@@ -31,7 +30,7 @@ export const formValuesArbitrary = fc.record({
 
 export const make = {
   recommended: Flemme({
-    cloneDeep: objectDeepCopy,
+    cloneDeep: _.clone,
     get,
     isEqual: fastDeepEqual,
     set,

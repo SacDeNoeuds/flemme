@@ -1,6 +1,6 @@
 import type { Validate } from 'flemme'
 import pipe from 'just-pipe'
-import * as x from 'unhoax'
+import { x } from 'unhoax'
 import { makeForm } from '../lib/form'
 
 export type FormValues = {
@@ -24,7 +24,7 @@ export type ValidationError = {
 const validate: Validate<ValidationError[], FormValues> = (values) => {
   const result = schema.parse(values)
   if (!result.success) {
-    return result.error.issues.map<ValidationError>((failure) => ({
+    return result.issues.map<ValidationError>((failure) => ({
       message: failure.refinement ?? failure.schemaName,
       path: failure.path.join('.'),
     }))

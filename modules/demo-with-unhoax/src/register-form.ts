@@ -1,6 +1,6 @@
 import type { Form, Validate } from 'flemme'
 import pipe from 'just-pipe'
-import * as x from 'unhoax'
+import { x } from 'unhoax'
 import { ensureDefined } from './lib/assert'
 import { makeForm } from './lib/form'
 import { sleep } from './lib/sleep'
@@ -24,8 +24,8 @@ type ValidationError = {
 const validate: Validate<ValidationError[], FormValues> = (values) => {
   const result = schema.parse(values)
   if (!result.success) {
-    return result.error.issues.map<ValidationError>(({ path, schemaName, refinement }) => ({
-      path: path.join('.'),
+    return result.issues.map<ValidationError>(({ path, schemaName, refinement }) => ({
+      path: path?.join('.') ?? '',
       message: refinement || schemaName,
     }))
   }
@@ -64,12 +64,12 @@ export const registerInput = (form: Form<FormValues, ValidationError[]>, name: k
     `feedback "${name}" should be defined`,
   )
 
-  input.addEventListener('input', () => form.change(name, input.value || undefined))
+  input.addEventListener('input', () => form.set(name, input.value || undefined))
   input.addEventListener('focus', () => form.focus(name))
   input.addEventListener('blur', () => form.blur(name))
 
   form.on('validated', () => {
-    const errors = (form.errors() ?? []).filter(({ path }) => path === name)
+    const errors = (form.errors ?? []).filter(({ path }) => path === name)
     const error = errors.map(({ message }) => message)
     feedback.innerText = error.join('\n')
   })

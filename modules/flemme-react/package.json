@@ -1,6 +1,6 @@
 {
   "name": "flemme-react",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "React bindings for flemme",
   "module": "build/esm/main.js",
   "types": "build/esm/main.d.ts",
@@ -33,11 +33,11 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "flemme": "^0.3.0",
+    "flemme": ">=0.3.0",
     "react": ">=15"
   },
   "devDependencies": {
-    "@types/react": "^17.0.39",
-    "react": "^17.0.2"
+    "@types/react": "^19.1.0",
+    "react": "^19.1.0"
   }
 }

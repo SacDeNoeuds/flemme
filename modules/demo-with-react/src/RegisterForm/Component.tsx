@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { addItem, removeItem, type Form } from 'flemme'
-import { UseField, useDirty, useErrors, useValue, useVisited } from 'flemme-react'
-import { ComponentProps, FC, FormEvent, useCallback, useMemo, useState } from 'react'
+import { UseField, useValue, useVisited } from 'flemme-react'
+import { ComponentProps, FC, FormEvent, useCallback, useEffect, useMemo, useState } from 'react'
 import { Paths } from 'type-fest'
 import { createRegistrationForm, type FormValues, type ValidationError } from './form'
 
@@ -30,8 +30,11 @@ export const RegisterForm: FC<Props> = ({ initialValues, onRegister }) => {
 
   const form = useMemo(() => createRegistrationForm({ initialValues, submit: register }), [initialValues])
 
-  const isFormDirty = useDirty(form)
-  const errors = useErrors(form) ?? []
+  const [errors, setErrors] = useState(form.errors)
+  useEffect(() => {
+    const off = form.on('validated', ({ errors }) => setErrors(errors))
+    return off
+  }, [form])
 
   const submit = (event: FormEvent) => {
     event.preventDefault()
@@ -45,10 +48,8 @@ export const RegisterForm: FC<Props> = ({ initialValues, onRegister }) => {
         <label>
           Submission state: {submitState}
           <br />
-          Form validity: {errors.length > 0 ? 'Invalid' : 'Valid'}
+          Form validity: {errors ? 'Invalid' : 'Valid'}
         </label>
-
-        <label>Dirty: {JSON.stringify(isFormDirty)}</label>
 
         {submitState === SubmitState.Pending && <div className="dimmer" />}
 
@@ -56,7 +57,7 @@ export const RegisterForm: FC<Props> = ({ initialValues, onRegister }) => {
           {'Name'}
           <TextInput form={form} path={'username'} />
           <small className="feedback-info">Between 4 and 233 characters</small>
-          <Errors form={form} path={'username'} errors={errors} />
+          <Errors form={form} path={'username'} errors={errors ?? []} />
         </label>
 
         <label>
@@ -76,14 +77,14 @@ export const RegisterForm: FC<Props> = ({ initialValues, onRegister }) => {
             )}
           </UseField>
           <small className="feedback-info">Between 4 and 233 characters</small>
-          <Errors form={form} path={'password'} errors={errors} />
+          <Errors form={form} path={'password'} errors={errors ?? []} />
         </label>
 
         <label>
           {'Confirm password'}
           <TextInput type="password" form={form} path={'confirmation'} />
           <small className="feedback-info">Between 4 and 233 characters</small>
-          <Errors form={form} path={'confirmation'} errors={errors} />
+          <Errors form={form} path={'confirmation'} errors={errors ?? []} />
         </label>
 
         <UseField form={form} path={'requirements'}>
@@ -91,7 +92,7 @@ export const RegisterForm: FC<Props> = ({ initialValues, onRegister }) => {
             <fieldset>
               <legend>
                 {'Requirements '}
-                <button type="button" onClick={() => change(addItem(value, '') as string[])}>
+                <button type="button" onClick={() => change(addItem(value ?? [], '') as string[])}>
                   {'+'}
                 </button>
               </legend>
@@ -106,7 +107,7 @@ export const RegisterForm: FC<Props> = ({ initialValues, onRegister }) => {
                     </button>
                   </div>
                   <small className="feedback-info">Between 3 and 20 characters</small>
-                  <Errors form={form} path={`${path}.${index}`} errors={errors} />
+                  <Errors form={form} path={`${path}.${index}`} errors={errors ?? []} />
                 </label>
               ))}
             </fieldset>
@@ -119,7 +120,7 @@ export const RegisterForm: FC<Props> = ({ initialValues, onRegister }) => {
       </form>
       <h4>Last successful submitted result:</h4>
       <pre>
-        <code>{submitState === SubmitState.Success && JSON.stringify(form.value(), null, 2)}</code>
+        <code>{submitState === SubmitState.Success && JSON.stringify(form.values, null, 2)}</code>
       </pre>
     </>
   )
@@ -153,8 +154,8 @@ const TextInput = <T, P extends Paths<T> & string>({ type = 'text', form, path, 
       type={type}
       value={value ?? ''}
       onChange={(event) => {
-        form.change(path, (event.target.value as any) || undefined)
-        console.info('change', { path, value: (event.target.value as any) || undefined, form: form.value() })
+        form.set(path, (event.target.value as any) || undefined)
+        console.info('change', { path, value: (event.target.value as any) || undefined, form: form.values })
       }}
       onFocus={() => form.focus(path)}
       onBlur={() => form.blur(path)}

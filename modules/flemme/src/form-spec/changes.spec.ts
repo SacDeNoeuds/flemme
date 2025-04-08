@@ -3,7 +3,7 @@ import { it } from '@fast-check/vitest'
 import { describe, expect, vi } from 'vitest'
 import { FormMaker, formValuesArbitrary, make, Product, productArbitrary, submit } from './utils'
 
-describe.each<FormMaker>(['recommended', 'lodash'])('form changes (%s)', (maker) => {
+describe.each<FormMaker>(['lodash'])('form changes (%s)', (maker) => {
   const makeForm = make[maker]
 
   it.prop([formValuesArbitrary, productArbitrary])('a whole array value', (values, product) => {

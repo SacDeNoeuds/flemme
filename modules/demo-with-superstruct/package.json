@@ -7,7 +7,7 @@
     "postbuild": "mv ./dist ../../public/with-superstruct"
   },
   "devDependencies": {
-    "superstruct": "^0.15.3"
+    "superstruct": "^2.0.2"
   },
   "dependencies": {
     "flemme": "^0.2.0"

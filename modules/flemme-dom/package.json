@@ -27,7 +27,7 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "type-fest": "^4.30.1"
+    "type-fest": "^4.39.1"
   },
   "peerDependencies": {
     "flemme": "^0.3.0"

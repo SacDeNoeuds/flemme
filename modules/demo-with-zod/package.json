@@ -7,7 +7,7 @@
     "postbuild": "mv ./dist ../../public/with-zod"
   },
   "dependencies": {
-    "flemme": "^0.2.0",
-    "zod": "^3.24.1"
+    "flemme": "^0.3.1",
+    "zod": "^3.24.2"
   }
 }
