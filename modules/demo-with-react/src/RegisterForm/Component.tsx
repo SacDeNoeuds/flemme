@@ -36,10 +36,12 @@ export const RegisterForm: FC<Props> = ({ initialValues, onRegister }) => {
     return off
   }, [form])
 
-  const submit = (event: FormEvent) => {
+  const [submittedValues, setSubmittedValues] = useState<FormValues | undefined>(undefined)
+  const submit = async (event: FormEvent) => {
     event.preventDefault()
     console.info('form errors', errors)
-    form.submit()
+    await form.submit()
+    setSubmittedValues({ ...form.values })
   }
 
   return (
@@ -120,7 +122,7 @@ export const RegisterForm: FC<Props> = ({ initialValues, onRegister }) => {
       </form>
       <h4>Last successful submitted result:</h4>
       <pre>
-        <code>{submitState === SubmitState.Success && JSON.stringify(form.values, null, 2)}</code>
+        <code>{submitState === SubmitState.Success && JSON.stringify(submittedValues, null, 2)}</code>
       </pre>
     </>
   )
