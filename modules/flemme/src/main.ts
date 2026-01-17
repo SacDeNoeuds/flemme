@@ -8,3 +8,4 @@ export {
   type Validate,
   type ValidationTriggerEvent,
 } from './make-form'
+export { withSchema } from './with-schema'

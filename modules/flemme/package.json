@@ -39,5 +39,10 @@
     "vanilla.js"
   ],
   "author": "SacDeNoeuds <sacdenoeuds.dev@gmail.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "@standard-schema/spec": "^1.1.0",
+    "unhoax": "^0.12.6",
+    "zod": "^3.25.76"
+  }
 }
