@@ -12,8 +12,9 @@ describe.each<FormMaker>(['recommended', 'lodash'])('product form (%s)', (maker)
     form.on('validated', listener)
     form.validate()
     expect(form.isValid).toBe(false)
-    expect(form.errors).toBe('mustProvideProducts')
-    expect(listener).toHaveBeenNthCalledWith(1, { errors: 'mustProvideProducts' })
+    const errors = [{ message: 'mustProvideProducts', path: 'products' }]
+    expect(form.errors).toEqual(errors)
+    expect(listener).toHaveBeenNthCalledWith(1, { errors })
   })
 
   it('auto-validates form upon trigger', () => {

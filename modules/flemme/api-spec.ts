@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import { Flemme } from './src/make-form'
+import { Flemme, FormError, FormErrors } from './src/make-form'
 
 // DOMAIN
 type Product = {
@@ -18,11 +18,10 @@ function EmptyProductFormValues(): ProductPayload {
     variants: [],
   }
 }
-type ProductFormError = 'variants_required' | 'prices_required'
-function validate(product: ProductPayload) {
-  const errors: ProductFormError[] = []
-  if (product.variants.length === 0) errors.push('variants_required')
-  return errors
+function validateProductPayload(product: ProductPayload): FormErrors<ProductPayload> {
+  const errors: FormError<ProductPayload>[] = []
+  if (product.variants.length === 0) errors.push({ message: 'variants_required', path: 'variants' })
+  return errors.length ? errors : undefined
 }
 // END DOMAIN
 declare const product: Product
@@ -39,10 +38,7 @@ function makeProductForm(options: {
   return makeForm({
     initial: options.initialValues ?? EmptyProductFormValues(),
     validationTriggers: ['blur'],
-    validate: (values) => {
-      const errors = validate(values)
-      return errors.length ? errors : undefined
-    },
+    validate: validateProductPayload,
     submit: options.save,
   })
 }

@@ -26,13 +26,18 @@ export type ChangeListener<T, P extends Paths<T> | '' = ''> = '' extends P
 export type FocusListener<T, P extends Paths<T> | '' = ''> = (data: { path: P }) => unknown
 export type ValidatedListener<Errors> = (data: { errors: Errors | undefined }) => unknown
 
-export type Validate<Errors, FormValue> = (value: FormValue) => Errors | undefined
+export type FormError<FormValues> = {
+  message: string
+  path: Paths<FormValues>
+}
+export type FormErrors<FormValues> = ReadonlyArray<FormError<FormValues>> | undefined
+export type Validate<FormValues> = (values: FormValues) => FormErrors<FormValues>
 
-export type Form<T, ValidationErrors = any> = {
+export type Form<T> = {
   // readers
   readonly initialValues: T
   readonly values: T
-  readonly errors: ValidationErrors | undefined
+  readonly errors: FormErrors<T>
   readonly isValid: boolean
   readonly isDirty: boolean
 
@@ -60,7 +65,7 @@ export type Form<T, ValidationErrors = any> = {
     (event: 'reset' | 'change', listener: ChangeListener<T>): () => void
     <P extends Paths<T>>(event: 'focus' | 'blur', path: P, listener: FocusListener<T, P>): () => void
     (event: 'focus' | 'blur', listener: FocusListener<T>): () => void
-    (event: 'validated', listener: ValidatedListener<ValidationErrors>): () => void
+    (event: 'validated', listener: ValidatedListener<FormError<T>[] | undefined>): () => void
     (event: 'submit', listener: (data: { values: T }) => unknown): () => void
     (event: 'submitted', listener: (data: { values: T; error?: unknown }) => unknown): () => void
   }
@@ -75,20 +80,16 @@ export type Form<T, ValidationErrors = any> = {
   validate: () => void
 }
 
-type CreateFormOptions<T, ValidationErrors> = {
+type CreateFormOptions<T> = {
   initial: T
-  validate?: Validate<ValidationErrors, T>
+  validate?: Validate<T>
   validationTriggers?: ValidationTriggerEvent[]
   submit: (values: T) => Promise<unknown>
 }
-export type CreateForm = <T, ValidationErrors = any>(
-  options: CreateFormOptions<T, ValidationErrors>,
-) => Form<T, ValidationErrors>
+export type CreateForm = <T>(options: CreateFormOptions<T>) => Form<T>
 
 export function Flemme({ get, set, isEqual, cloneDeep }: FlemmeParams): CreateForm {
-  return function createForm<T, ValidationErrors>(
-    options: CreateFormOptions<T, ValidationErrors>,
-  ): Form<T, ValidationErrors> {
+  return function createForm<T>(options: CreateFormOptions<T>): Form<T> {
     const { validate = () => undefined, validationTriggers = [] } = options
     // readers
     let initialValue = cloneDeep(options.initial)
@@ -99,7 +100,7 @@ export function Flemme({ get, set, isEqual, cloneDeep }: FlemmeParams): CreateFo
     let submitting = false
 
     // validation
-    let errors: ValidationErrors | undefined = undefined
+    let errors: FormErrors<T> = undefined
 
     // events
     const listeners: Record<FormEvent, Set<Listener>> = {
@@ -116,7 +117,7 @@ export function Flemme({ get, set, isEqual, cloneDeep }: FlemmeParams): CreateFo
       listeners[event].forEach((listener) => listener(data))
     }
 
-    const form: Form<T, ValidationErrors> = {
+    const form: Form<T> = {
       // readers
       get initialValues() {
         return initialValue

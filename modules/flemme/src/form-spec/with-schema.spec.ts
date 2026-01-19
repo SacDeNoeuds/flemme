@@ -2,6 +2,7 @@ import { StandardSchemaV1 } from '@standard-schema/spec'
 import { x } from 'unhoax'
 import { describe, expect, it } from 'vitest'
 import { z } from 'zod'
+import { FormError } from '../make-form'
 import { withSchema } from '../with-schema'
 import { make } from './utils'
 
@@ -33,8 +34,8 @@ for (const schema of schemas) {
         validate: withSchema(schema),
       })
       form.validate()
-      const expectedIssue: StandardSchemaV1.Issue = {
-        path: ['nested', 0, 'of', 0, 'item'],
+      const expectedIssue: FormError<typeof form.values> = {
+        path: 'nested.0.of.0.item',
         message: expect.any(String),
       }
       expect(form.errors).toMatchObject([expectedIssue])

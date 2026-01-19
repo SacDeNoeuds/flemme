@@ -3,7 +3,7 @@ import fastDeepEqual from 'fast-deep-equal'
 import get from 'just-safe-get'
 import set from 'just-safe-set'
 import _ from 'lodash'
-import { Flemme } from '../make-form'
+import { Flemme, Validate } from '../make-form'
 
 export type FormMaker = keyof typeof make
 
@@ -13,10 +13,18 @@ export type Product = {
   createdAt: Date
   forSale: boolean
 }
-export type FormValues = { products: Product[] }
+export type FormValues = { products: Product[]; name?: string }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const submit = (_values: FormValues): Promise<void> => Promise.resolve()
-export const validate = ({ products }: FormValues) => (products.length === 0 ? 'mustProvideProducts' : undefined)
+export const validate: Validate<FormValues> = ({ products }) => {
+  if (products.length > 0) return undefined
+  return [
+    {
+      message: 'mustProvideProducts',
+      path: 'products',
+    },
+  ]
+}
 
 export const productArbitrary = fc.record({
   name: fc.string(),
