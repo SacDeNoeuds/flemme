@@ -1,5 +1,4 @@
-import _ from 'lodash'
-import { Flemme, FormError, FormErrors } from './src/make-form'
+import { createForm, FormError, FormErrors } from './src/form'
 
 // DOMAIN
 type Product = {
@@ -29,13 +28,12 @@ declare const api: {
   createProduct: (product: ProductPayload) => Promise<void>
   updateProduct: (id: number, product: ProductPayload) => Promise<void>
 }
-const makeForm = Flemme(_)
 
 function makeProductForm(options: {
   initialValues?: ProductPayload
   save: (product: ProductPayload) => Promise<void>
 }) {
-  return makeForm({
+  return createForm({
     initial: options.initialValues ?? EmptyProductFormValues(),
     validationTriggers: ['blur'],
     validate: validateProductPayload,

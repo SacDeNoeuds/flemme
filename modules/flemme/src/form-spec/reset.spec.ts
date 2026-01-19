@@ -1,10 +1,11 @@
 /* eslint-disable security/detect-object-injection */
 import { it } from '@fast-check/vitest'
 import { describe, expect, vi } from 'vitest'
-import { FormMaker, formValuesArbitrary, make, Product, submit, validate } from './utils'
+import { createForm } from '../form'
+import { formValuesArbitrary, Product, submit, validate } from './utils'
 
-describe.each<FormMaker>(['recommended', 'lodash'])('form reset (%s)', (maker) => {
-  const makeForm = make[maker]
+describe('form reset', () => {
+  const makeForm = createForm
 
   it.prop([formValuesArbitrary])('resets form', (values) => {
     const form = makeForm({ initial: values, submit, validate })

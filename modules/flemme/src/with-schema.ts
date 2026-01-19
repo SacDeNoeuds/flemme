@@ -1,6 +1,6 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec'
 import { Paths } from 'type-fest'
-import type { Validate } from './make-form'
+import type { Validate } from './form'
 
 /**
  * Utility to create a validation function based on a standard-schema spec.

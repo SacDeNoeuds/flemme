@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from 'vitest'
-import { make } from './utils'
+import { createForm } from '../form'
 
 describe('on()', () => {
-  const makeForm = make.recommended
+  const makeForm = createForm
 
   it('unsubscribes global subscription', () => {
     const form = makeForm({ initial: { name: 'jack' }, submit: async () => {} })

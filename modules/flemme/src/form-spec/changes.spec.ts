@@ -1,10 +1,11 @@
 /* eslint-disable security/detect-object-injection */
 import { it } from '@fast-check/vitest'
 import { describe, expect, vi } from 'vitest'
-import { FormMaker, formValuesArbitrary, make, Product, productArbitrary, submit } from './utils'
+import { createForm } from '../form'
+import { formValuesArbitrary, Product, productArbitrary, submit } from './utils'
 
-describe.each<FormMaker>(['lodash'])('form changes (%s)', (maker) => {
-  const makeForm = make[maker]
+describe('form changes', () => {
+  const makeForm = createForm
 
   it.prop([formValuesArbitrary, productArbitrary])('a whole array value', (values, product) => {
     const form = makeForm({ initial: values, submit })

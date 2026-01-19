@@ -1,10 +1,11 @@
 /* eslint-disable security/detect-object-injection,@typescript-eslint/no-unused-vars */
 import { it } from '@fast-check/vitest'
 import { describe, expect, vi } from 'vitest'
-import { FormMaker, formValuesArbitrary, make, Product, submit, validate } from './utils'
+import { createForm } from '../form'
+import { formValuesArbitrary, Product, submit, validate } from './utils'
 
-describe.each<FormMaker>(['recommended', 'lodash'])('form reset (%s)', (maker) => {
-  const makeForm = make[maker]
+describe('form reset', () => {
+  const makeForm = createForm
   it('throws when submitting invalid values', async () => {
     const form = makeForm({ initial: { products: [] }, submit, validate })
     await expect(form.submit).rejects.toThrow(Error)

@@ -1,10 +1,11 @@
 /* eslint-disable security/detect-object-injection */
 import { it } from '@fast-check/vitest'
 import { describe, expect, vi } from 'vitest'
-import { FormMaker, formValuesArbitrary, make, submit } from './utils'
+import { createForm } from '../form'
+import { formValuesArbitrary, submit } from './utils'
 
-describe.each<FormMaker>(['recommended', 'lodash'])('form focus/blur (%s)', (maker) => {
-  const makeForm = make[maker]
+describe('form focus/blur', () => {
+  const makeForm = createForm
 
   it.prop([formValuesArbitrary.filter(({ products }) => products.length > 0)])(
     'focuses first product name',

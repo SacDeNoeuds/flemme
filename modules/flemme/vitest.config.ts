@@ -7,7 +7,7 @@ export default defineConfig({
     coverage: {
       ...(isCI && { reporter: ['json-summary'] }),
       provider: 'istanbul',
-      include: ['src/make-form.ts', 'src/iterable.ts'],
+      include: ['src/form.ts', 'src/iterable.ts'],
     },
   },
 })

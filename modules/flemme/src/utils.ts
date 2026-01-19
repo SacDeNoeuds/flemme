@@ -3,7 +3,7 @@ import { Get, Paths } from 'type-fest'
 export const get = <T, P extends Paths<T>>(source: T, path: P): Get<T, Extract<P, string>> => {
   return (path as string).split('.').reduce((acc, segment) => {
     const isIndex = /[0-9]+/.test(segment)
-    return acc[isIndex ? Number(segment) : segment]
+    return acc?.[isIndex ? Number(segment) : segment]
   }, source as any)
 }
 
@@ -41,7 +41,7 @@ export const isEqual = (a: any, b: any): boolean => {
   // not be used when building frontend forms
   if (a.constructor !== b.constructor) return false
 
-  if (a instanceof Date) return a.valueOf() === b.valueOf()
+  if (a instanceof Date) return Object.is(a.valueOf(), b.valueOf())
   if (Array.isArray(a)) {
     if (a.length !== b.length) return false
     return a.every((value, index) => isEqual(value, b[index]))

@@ -2,11 +2,8 @@ import { StandardSchemaV1 } from '@standard-schema/spec'
 import { x } from 'unhoax'
 import { describe, expect, it } from 'vitest'
 import { z } from 'zod'
-import { FormError } from '../make-form'
+import { createForm, FormError } from '../form'
 import { withSchema } from '../with-schema'
-import { make } from './utils'
-
-const createForm = make.lodash
 
 type FormValues = {
   test: string
