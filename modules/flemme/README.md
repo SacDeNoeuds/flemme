@@ -40,31 +40,30 @@ Table of contents:
 
 - [Installation](#installation)
 - [Basic usage](#basic-usage)
-- [Limitations](#limitations)
+- [⚠️ Limitations](#-limitations)
 - [Demos](#demos)
 - [Philosophy](#philosophy)
 - [API](#api)
-  - [`Flemme({ get, set, cloneDeep, isEqual })`](#flemme-get-set-isequal-clonedeep-)
-  - [`createForm<T, ValidationErrors>`](#createformt-validationerrors-initial-submit-validate-validationtriggers-)
+  - [createForm<T>{ initial, submit, validate?, validationTriggers? }](#createformt-initial-submit-validate-validationtriggers-)
   - [Form](#form)
     - [`form.initialValues`](#forminitialvalues)
     - [`form.values`](#formvalues)
     - [`form.get(path)`](#formgetpath)
-    - [`form.isDirty` & `isDirtyAt(path)`](#formisdirty--isdirtyatpath)
-    - [`form.isVisited(path)?`](#formisvisitedpath)
-    - [`form.set(values)` / `form.set(path, value)`](#formsetvalues--formsetpath-value)
+    - [`form.isDirty() & isDirtyAt(path)`](#formisdirty--isdirtyatpath)
+    - [`form.isVisited(path?)`](#formisvisitedpath)
+    - [`form.set(values) / form.set(path, value)`](#formsetvalues--formsetpath-value)
     - [`form.reset(nextInitialValue?)`](#formresetnextinitialvalue)
     - [`form.resetAt(path, nextInitialValue?)`](#formresetatpath-nextinitialvalue)
     - [`form.blur(path)`](#formblurpath)
     - [`form.focus(path)`](#formfocuspath)
-    - [`form.on(event, listener)` / `form.on(event, path, listener)`](#formonevent-listener--formonevent-path-listener)
+    - [`form.on(event, listener) / form.on(event, path, listener)`](#formonevent-listener--formonevent-path-listener)
     - [`form.validate()`](#formvalidate)
-    - [`form.errors`](#formerrors)
+    - [`form.errors()`](#formerrors)
     - [`form.isValid`](#formisvalid)
     - [`submit()`](#submit)
-    - [`Form<T, ValidationErrors>`](#formt-validationerrors)
+    - [`Form<T>`](#formt)
   - [Helpers](#helpers)
-    - [`addItem(array, value, atIndex?)`](#additemarray-value-atindex)
+    - [`addItemarray(value, atIndex?)`](#additemarray-value-atindex)
     - [`removeItem(array, index)`](#removeitemarray-index)
 
 ## Installation
@@ -73,133 +72,26 @@ Table of contents:
 npm i -D flemme
 ```
 
-Then create a file to initialise the lib. Since I don’t want to enforce lib choices but I still need classic functions, you’ll have to inject into the lib:
-
-```ts
-// src/lib/flemme.(js|ts)
-import { Flemme } from 'flemme'
-import { get, set, isEqual, deepClone } from 'your-favorite-tool'
-
-export const createForm = Flemme({ get, set, isEqual, cloneDeep: deepClone })
-```
-
-<details>
-<summary>Advised when you don’t have libraries like lodash/underscore/mout</summary>
-
-```ts
-// src/lib/flemme.ts
-import { Flemme } from 'flemme'
-import fastDeepEqual from 'fast-deep-equal' // 852B minified
-
-import objectDeepCopy from 'object-deep-copy' // 546B minified
-
-import get from 'get-value' // 1.2kB minified
-import set from 'set-value' // 1.5kB minified
-// OR
-import get from '@strikeentco/get' // 450B minified
-import set from '@strikeentco/set' // 574B minified
-// OR
-import get from 'just-safe-get' // recommended
-import set from 'just-safe-set' // recommended
-
-export const createForm = Flemme({
-  get,
-  set,
-  isEqual: fastDeepEqual,
-  cloneDeep: objectDeepCopy,
-})
-```
-
-</details>
-
-<details>
-<summary>With Lodash</summary>
-
-```ts
-// src/lib/flemme.ts
-import { Flemme } from 'flemme'
-import _ from 'lodash-es' // or 'lodash'
-
-export const createForm = Flemme({
-  get: _.get,
-  set: _.set,
-  isEqual: _.isEqual,
-  cloneDeep: _.cloneDeep,
-})
-```
-
-</details>
-
-<details>
-<summary>With MoutJS</summary>
-
-```ts
-// src/lib/form.(ts|js)
-import { Flemme } from 'flemme'
-import { get, set, deepClone } from 'mout/object'
-import { deepEquals, deepClone } from 'mout/lang'
-
-export const createForm = Flemme({
-  get,
-  set,
-  isEqual: deepEquals,
-  cloneDeep: deepClone,
-})
-```
-
-</details>
-
-<details>
-  <summary>Underscore JS</summary>
-
-⚠️ **Untested!**
-
-```ts
-import { Flemme } from 'flemme'
-import _ from 'underscore'
-import deepCloneMixin from 'underscore.deepclone'
-import getSetMixin from 'underscore.getset'
-_.mixin(deepCloneMixin)
-_.mixin(getSetMixin)
-
-const createForm = Flemme({
-  get: _.get,
-  set: _.set,
-  isEqual: _.isEqual,
-  cloneDeep: _.deepClone,
-})
-```
-
-</details>
-
 **TS users**: Enabling proper types requires TS v4.1+ and type-fest v0.21+
 
-**React users**: check out the React binding package [`flemme-react`](https://github.com/SacDeNoeuds/flemme/tree/main/bindings/react)
+**React users**: check out the React binding package [`flemme-react`](https://github.com/SacDeNoeuds/flemme/tree/main/modules/flemme-react)
+**Vue users**: check out the Vue binding package [`flemme-vue`](https://github.com/SacDeNoeuds/flemme/tree/main/modules/flemme-vue)
+**Vanilla users**: check out the DOM binding package [`flemme-dom`](https://github.com/SacDeNoeuds/flemme/tree/main/modules/flemme-dom)
 
 ## Basic usage
 
 ```ts
 // src/path/to/user-form.(js|ts)
-import { addItem, removeItem /* for arrays */ } from 'flemme'
-import { createForm } from 'path/to/lib/form'
+import { createForm, withSchema, addItem, removeItem /* for arrays */ } from 'flemme'
 
 export const makeUserProfileForm = (initialValue) => createForm({
   initial: initialValue,
-  submit: async (values) => { await fetch('…', {}) },
-  validate: validateUserProfileForm,
+  validate: withSchema(userSchema), // any standard schema is supported: zod's, valibot, unhoax, …
   validationTriggers: ['change', 'blur', 'focus', 'reset', 'validated'], // all available triggers, pick only a subset of course (ideally one only)
+  submit: async (values) => {
+    await fetch('…', {})
+  },
 })
-
-const validateUserProfileForm = (value) => {
-  // NOTE: not necessarily an array, the data type of your choice
-  // who am I to tell you what data type best suits your need ?
-  const errors = []
-
-  if (!value.name) errors.push({ code: 'name is required' })
-  return errors.length === 0
-    ? undefined // NOTE: that's how the lib knows the form is valid
-    : errors
-}
 
 const form = makeUserProfileForm({
   name: { first: 'John', last: 'Doe' },
@@ -233,19 +125,29 @@ form.submit()
   .catch(() => {…})
 ```
 
-## Limitations
+## ⚠️ Limitations
 
-:warning: The top-level value _must_ be an object or an array
+- The top-level value _must_ be an object or an array
+- Properties cannot contain a `.` because of the path notation. `const values = { 'toto.tata': 'Hello !' }` will not work.
+- Only serializable types are supported, which excludes:
+  - Set
+  - Map
+  - Iterables
+  - symbol
+  - functions
+  - etc.
 
 ## Demos
 
-- With `superstruct` validation: [demo](https://sacdenoeuds.github.io/flemme/with-superstruct/) | [source](https://github.com/SacDeNoeuds/flemme/blob/main/with-superstruct)
-- With `yup` validation: [demo](https://sacdenoeuds.github.io/flemme/with-yup/) | [source](https://github.com/SacDeNoeuds/flemme/blob/main/with-yup)
-- With React: [demo](https://sacdenoeuds.github.io/flemme/with-react/) | [source](https://github.com/SacDeNoeuds/flemme/blob/main/with-react)
+- With `zod` validation: [demo](https://sacdenoeuds.github.io/flemme/with-zod/) | [source](https://github.com/SacDeNoeuds/flemme/blob/main/modules/demo-with-zod)
+- With `unhoax` validation: [demo](https://sacdenoeuds.github.io/flemme/with-unhoax/) | [source](https://github.com/SacDeNoeuds/flemme/blob/main/modules/demo-with-unhoax)
+- With React: [demo](https://sacdenoeuds.github.io/flemme/with-react/) | [source](https://github.com/SacDeNoeuds/flemme/blob/main/modules/demo-with-react)
+- With Vue: [demo](https://sacdenoeuds.github.io/flemme/with-vue/) | [source](https://github.com/SacDeNoeuds/flemme/blob/main/modules/demo-with-vue)
+- With DOM (vanilla): [demo](https://sacdenoeuds.github.io/flemme/with-dom/) | [source](https://github.com/SacDeNoeuds/flemme/blob/main/modules/demo-with-unhoax)
 
 ## Philosophy
 
-I think handling forms means two main parts:
+Handling forms means two main parts:
 
 1. Form **state**, such as dirty/pristine, touched/modified, visited, active and state mutations
 2. Form **validation**
@@ -254,8 +156,8 @@ And it should have to be testable in any environment (browser, node, deno, etc.)
 
 About form **validation**, there already exist wonderful tools to validate schema or even add cross-field validation, the idea is to _not_ reimplement one. Among those tools:
 
-- [unhoax](https://github.com/SacDeNoeuds/unhoax)
 - [zod](https://github.com/colinhacks/zod)
+- [unhoax](https://github.com/SacDeNoeuds/unhoax)
 - [superstruct](https://docs.superstructjs.org/)
 - [io-ts](https://gcanti.github.io/io-ts/)
 - [jsonschema](https://github.com/tdegrunt/jsonschema) − validates [JSON Schema declarations](http://json-schema.org/)
@@ -265,33 +167,21 @@ About form **state**, I figured that in every project at some point we use a uti
 
 Plus since TypeScript v4.1, lodash-path related function can be typed strongly, so using lodash-like path felt like a commonly known API to propose.
 
-Now you ought to know (if you don’t yet): a great framework-agnostic form library already exists: [final-form](https://final-form.org/). However, I find the API and config not to be _that_ straightforward. FYI, it’s 16.9kB and has a separate package for arrays while this one is 1.82KB … not counting that you have to bring your own set/get/isEqual functions ; but as mentioned above, you usually already have them in your project. Another advantage of final-form is its very [complete ecosystem](https://final-form.org/docs/final-form/companion-libraries).
+Now you ought to know (if you don’t yet): a great framework-agnostic form library already exists: [final-form](https://final-form.org/). However, I find the API and config not to be _that_ straightforward. FYI, it’s 16.9kB and has a separate package for arrays while this one is 1.82KB.
+Another advantage of final-form is its very [complete ecosystem](https://final-form.org/docs/final-form/companion-libraries).
 
 ## API
 
-### `Flemme({ get, set, isEqual, cloneDeep })`
+### `createForm<T>({ initial, submit, validate?, validationTriggers? })`
 
 ```ts
-const Flemme: (parameters: {
-  get: (target: any, path: string, defaultValue?: any) => any
-  set: (target: any, path: string, value: any) => void
-  isEqual: (a: any, b: any) => boolean
-  cloneDeep: <T>(value: T) => T
-}) => MakeForm
-```
-
-### `createForm<T, ValidationErrors>({ initial, submit, validate?, validationTriggers? })`
-
-```ts
-const createForm: <T, ValidationErrors>(options: {
+const createForm: <T>(options: {
   initial: PartialDeep<T> // array or object
-  validate: (value: PartialDeep<T>) => ValidationErrors | undefined
+  validate: (value: PartialDeep<T>) => FormErrors<T>
   validationTriggers: Array<'change' | 'blur' | 'focus' | 'reset' | 'validated'>
   submit: (values: T) => Promise<unknown>
-}) => Form<T, ValidationErrors>
+}) => Form<T>
 ```
-
-**:warning: NB: You bring your own validation errors shape, the only requirement is that `undefined` is returned when no error**
 
 ### Form
 
@@ -346,7 +236,7 @@ form.isDirtyAt('user.name') // check only a subset of properties
 
 #### `form.isVisited(path?)`
 
-A property is marked as visited when it has gained focus once. Only a `form.reset(path?)` unmarks the poperty as "visited".
+A property is marked as visited when it has gained focus once. Only a `form.reset(path?)` unmarks the property as "visited".
 
 ```ts
 type IsVisited = (path?: string) => boolean
@@ -518,8 +408,8 @@ form.validate()
 #### `form.errors`
 
 ```ts
-type Errors<ValidationErrors> = {
-  readonly errors: ValidationErrors | undefined
+type Errors<FormValues> = {
+  readonly errors: Array<{ message: string; path: Paths<FormValues> }> | undefined
 }
 
 // Usage:
@@ -552,7 +442,7 @@ Emits events `'submit'` when starting submission, and `'submitted'` when done (s
 export type Submit<T> = (handler: (value: T) => Promise<any>) => Promise<void>
 
 // Usage:
-import { createForm } from '<repo>/library/flemme'
+import { createForm } from 'flemme'
 
 const form = createForm({
   …,
@@ -571,14 +461,14 @@ const form = createForm({
 await form.submit()
 ```
 
-#### `Form<T, ValidationErrors>`
+#### `Form<T>`
 
 ```ts
-export type Form<T, ValidationErrors> = {
+export type Form<T> = {
   // readers
   readonly initialValues: T
   readonly values: T
-  readonly errors: ValidationErrors | undefined
+  readonly errors: FormErrors<T>
   readonly isValid: boolean
   readonly isDirty: boolean
 
@@ -623,7 +513,7 @@ export type Form<T, ValidationErrors> = {
 
 ### Helpers
 
-**NB**: The lib is tree-shakeable. Therefore if you don’t use any of these, they won’t jump into your bundle :wink:
+**NB**: The lib is tree-shakeable. Therefore if you don’t use any of these, they won’t jump into your bundle 🪶
 
 #### `addItem(array, value, atIndex?)`
 
