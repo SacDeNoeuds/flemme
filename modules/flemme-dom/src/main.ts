@@ -1,5 +1,4 @@
-import type { Form } from 'flemme'
-import type { Get, Paths } from 'type-fest'
+import type { Form, FlemmeGet as Get, FlemmePaths as Paths } from 'flemme'
 
 export function registerInput<
   T,

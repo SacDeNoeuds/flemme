@@ -26,10 +26,7 @@
     "dom"
   ],
   "license": "MIT",
-  "dependencies": {
-    "type-fest": "^4.39.1"
-  },
   "peerDependencies": {
-    "flemme": "^0.3.0"
+    "flemme": "file:../flemme"
   }
 }
