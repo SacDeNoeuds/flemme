@@ -25,7 +25,7 @@ const plugins = (output) => [
     sourceMap: true,
   }),
   !isDebug && terser(),
-  visualizer({ filename: `${output}/stats.html`, gzipSize: true, sourcemap: true, template: 'sunburst' }),
+  visualizer({ filename: `${output}/stats.html`, gzipSize: true, template: 'sunburst' }),
 ]
 
 export default [

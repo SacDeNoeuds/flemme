@@ -168,9 +168,6 @@ About form **validation**, there already exist wonderful tools to validate schem
 
 Since TypeScript v4.1, lodash-path related function can be strongly typed, therefore using lodash-like path felt like a commonly known API to propose.
 
-Now you ought to know (if you don’t yet): a great framework-agnostic form library already exists: [final-form](https://final-form.org/). However, I find the API and config not to be _that_ straightforward. FYI, it’s 16.9kB and has a separate package for arrays while this one is 1.82KB.
-Another advantage of final-form is its very [complete ecosystem](https://final-form.org/docs/final-form/companion-libraries).
-
 ## API
 
 ### `createForm<T>({ initialValues, submit, schema?, validationTriggers? })`
