@@ -34,7 +34,7 @@ function makeProductForm(options: {
   save: (product: ProductPayload) => Promise<void>
 }) {
   return createForm({
-    initial: options.initialValues ?? EmptyProductFormValues(),
+    initialValues: options.initialValues ?? EmptyProductFormValues(),
     validationTriggers: ['blur'],
     validate: validateProductPayload,
     submit: options.save,

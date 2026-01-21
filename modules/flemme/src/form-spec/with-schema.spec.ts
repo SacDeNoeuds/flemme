@@ -3,7 +3,6 @@ import { x } from 'unhoax'
 import { describe, expect, it } from 'vitest'
 import { z } from 'zod'
 import { createForm, FormError } from '../form'
-import { withSchema } from '../with-schema'
 
 type FormValues = {
   test: string
@@ -26,9 +25,9 @@ for (const schema of schemas) {
   describe(`validates form with vendor ${schema['~standard'].vendor}`, () => {
     it('reports form errors upon submit', () => {
       const form = createForm({
-        initial: { test: 'abc', ok: true, nested: [{ of: [{ item: 1 }] }] },
+        initialValues: { test: 'abc', ok: true, nested: [{ of: [{ item: 1 }] }] },
         submit: async (_) => {},
-        validate: withSchema(schema),
+        schema,
       })
       form.validate()
       const expectedIssue: FormError<typeof form.values> = {
@@ -40,10 +39,9 @@ for (const schema of schemas) {
 
     it('reports no form error', () => {
       const form = createForm({
-        initial: { test: '', ok: true, nested: [{ of: [{ item: 1 }] }] },
-        // initial: …,
+        initialValues: { test: '', ok: true, nested: [{ of: [{ item: 1 }] }] },
         submit: async (_) => {},
-        validate: withSchema(schema),
+        schema,
       })
       form.validate()
       expect(form.errors).toHaveLength(1)

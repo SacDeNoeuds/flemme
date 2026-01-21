@@ -10,7 +10,7 @@ describe('form focus/blur', () => {
   it.prop([formValuesArbitrary.filter(({ products }) => products.length > 0)])(
     'focuses first product name',
     (values) => {
-      const form = makeForm({ initial: { ...values, name: 'toto' }, submit })
+      const form = makeForm({ initialValues: { ...values, name: 'toto' }, submit })
       const formListener = vi.fn()
       const pathListener = vi.fn()
       form.on('focus', formListener)
@@ -19,17 +19,17 @@ describe('form focus/blur', () => {
       expect(pathListener).not.toHaveBeenCalled()
 
       form.focus('products.0.name')
-      expect(form.isVisited()).toBe(true)
-      expect(form.isVisited('products.0')).toBe(true)
-      expect(form.isVisited('products.0.name')).toBe(true)
-      expect(form.isVisited('name')).toBe(false)
+      expect(form.isTouched).toBe(true)
+      expect(form.isTouchedAt('products.0')).toBe(true)
+      expect(form.isTouchedAt('products.0.name')).toBe(true)
+      expect(form.isTouchedAt('name')).toBe(false)
       expect(formListener).toHaveBeenNthCalledWith(1, { path: 'products.0.name' })
       expect(pathListener).toHaveBeenNthCalledWith(1, { path: 'products.0.name' })
     },
   )
 
   it.prop([formValuesArbitrary.filter(({ products }) => products.length > 0)])('blurs first product name', (values) => {
-    const form = makeForm({ initial: values, submit })
+    const form = makeForm({ initialValues: values, submit })
     const formListener = vi.fn()
     const pathListener = vi.fn()
     form.on('blur', formListener)
@@ -39,7 +39,7 @@ describe('form focus/blur', () => {
 
     form.focus('products.0.name')
     form.blur('products.0.name')
-    expect(form.isVisited()).toBe(true)
+    expect(form.isTouched).toBe(true)
     expect(formListener).toHaveBeenNthCalledWith(1, { path: 'products.0.name' })
     expect(pathListener).toHaveBeenNthCalledWith(1, { path: 'products.0.name' })
   })

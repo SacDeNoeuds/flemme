@@ -1,20 +1,17 @@
 /* eslint-disable security/detect-object-injection,@typescript-eslint/no-unused-vars */
 import { it } from '@fast-check/vitest'
 import { describe, expect, vi } from 'vitest'
-import { createForm } from '../form'
-import { formValuesArbitrary, Product, submit, validate } from './utils'
+import { createProductForm, formValuesArbitrary } from './utils'
 
 describe('form reset', () => {
-  const makeForm = createForm
   it('throws when submitting invalid values', async () => {
-    const form = makeForm({ initial: { products: [] }, submit, validate })
+    const form = createProductForm({ initialValues: { products: [] } })
     await expect(form.submit).rejects.toThrow(Error)
   })
 
   it('throws when resetting while submitting', async () => {
     let resolve = () => {}
-    const form = makeForm({
-      initial: { products: [] as Product[] },
+    const form = createProductForm({
       submit: () => {
         return new Promise<void>((r) => {
           resolve = r
@@ -28,7 +25,7 @@ describe('form reset', () => {
   })
 
   it.prop([formValuesArbitrary])('submits and resets form', async (values) => {
-    const form = makeForm({ initial: { products: [] as Product[] }, submit })
+    const form = createProductForm()
     const resetListener = vi.fn()
     form.on('reset', resetListener)
     form.set(values)
@@ -43,8 +40,7 @@ describe('form reset', () => {
 
   it('emits submit events (successful submit)', async () => {
     let resolve = () => {}
-    const form = makeForm({
-      initial: { products: [] as Product[] },
+    const form = createProductForm({
       submit: () => {
         return new Promise<void>((r) => {
           resolve = r
@@ -69,8 +65,7 @@ describe('form reset', () => {
 
   it('emits submit events (failing submit)', async () => {
     let reject = (reason?: unknown) => {}
-    const form = makeForm({
-      initial: { products: [] as Product[] },
+    const form = createProductForm({
       submit: () => {
         return new Promise<void>((_, r) => {
           reject = r
@@ -96,8 +91,7 @@ describe('form reset', () => {
 
   it('accepts field changes during submission', () => {
     let resolve = () => {}
-    const form = makeForm({
-      initial: { products: [] as Product[] },
+    const form = createProductForm({
       submit: () =>
         new Promise<void>((r) => {
           resolve = r
@@ -107,7 +101,7 @@ describe('form reset', () => {
     form.focus('products')
     form.set('products', [{ name: 'toto', createdAt: new Date(), forSale: true, price: 42 }])
     resolve()
-    expect(form.isVisited()).toBe(true)
+    expect(form.isTouched).toBe(true)
     expect(form.isDirty).toBe(true)
   })
 
@@ -115,8 +109,7 @@ describe('form reset', () => {
     'accepts form changes during submission',
     (values) => {
       let resolve = () => {}
-      const form = makeForm({
-        initial: { products: [] as Product[] },
+      const form = createProductForm({
         submit: () =>
           new Promise<void>((r) => {
             resolve = r
@@ -125,7 +118,7 @@ describe('form reset', () => {
       void form.submit()
       form.set(values)
       resolve()
-      expect(form.isVisited()).toBe(false)
+      expect(form.isTouched).toBe(false)
       expect(form.isDirty).toBe(true)
       expect(form.values.products).toEqual(values.products)
     },

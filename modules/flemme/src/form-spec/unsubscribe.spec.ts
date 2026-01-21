@@ -1,3 +1,4 @@
+import { x } from 'unhoax'
 import { describe, expect, it, vi } from 'vitest'
 import { createForm } from '../form'
 
@@ -5,7 +6,11 @@ describe('on()', () => {
   const makeForm = createForm
 
   it('unsubscribes global subscription', () => {
-    const form = makeForm({ initial: { name: 'jack' }, submit: async () => {} })
+    const form = makeForm({
+      initialValues: { name: 'jack' },
+      submit: async () => {},
+      schema: x.object({ name: x.string }),
+    })
     const listener = vi.fn()
     const unsubscribe = form.on('change', listener)
     form.set('name', 'john')
@@ -15,7 +20,11 @@ describe('on()', () => {
   })
 
   it('unsubscribes path-based subscription', () => {
-    const form = makeForm({ initial: { name: 'jack' }, submit: async () => {} })
+    const form = makeForm({
+      initialValues: { name: 'jack' },
+      submit: async () => {},
+      schema: x.object({ name: x.string }),
+    })
     const listener = vi.fn()
     const unsubscribe = form.on('change', 'name', listener)
     form.set('name', 'john')

@@ -44,5 +44,8 @@
     "@standard-schema/spec": "^1.1.0",
     "unhoax": "^0.12.6",
     "zod": "^3.25.76"
+  },
+  "dependencies": {
+    "type-fest": "^5.4.1"
   }
 }

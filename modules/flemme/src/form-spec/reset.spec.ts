@@ -2,13 +2,13 @@
 import { it } from '@fast-check/vitest'
 import { describe, expect, vi } from 'vitest'
 import { createForm } from '../form'
-import { formValuesArbitrary, Product, submit, validate } from './utils'
+import { createProductForm, formValuesArbitrary } from './utils'
 
 describe('form reset', () => {
   const makeForm = createForm
 
   it.prop([formValuesArbitrary])('resets form', (values) => {
-    const form = makeForm({ initial: values, submit, validate })
+    const form = createProductForm({ initialValues: values })
     const listener = vi.fn()
     form.on('reset', listener)
     expect(listener).not.toHaveBeenCalled()
@@ -24,7 +24,7 @@ describe('form reset', () => {
   })
 
   it.prop([formValuesArbitrary.filter((v) => v.products.length > 0)])('resets products only', (values) => {
-    const form = makeForm({ submit, initial: { ...values, name: 'toto' }, validate })
+    const form = createProductForm({ initialValues: { ...values, name: 'toto' } })
     const nameResetListener = vi.fn()
     const productResetListener = vi.fn()
     form.on('reset', 'products', productResetListener)
@@ -50,7 +50,7 @@ describe('form reset', () => {
   })
 
   it.prop([formValuesArbitrary.filter((v) => v.products.length > 0)])('resets products with value', (values) => {
-    const form = makeForm({ submit, initial: { products: [] as Product[], name: 'toto' } })
+    const form = createProductForm({ initialValues: { products: [], name: 'toto' } })
     const nameResetListener = vi.fn()
     const productResetListener = vi.fn()
     form.on('reset', 'products', productResetListener)

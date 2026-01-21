@@ -15,7 +15,7 @@
     <img alt="js-standard-style" src="https://img.shields.io/badge/code%20style-standard-brightgreen.svg">
   </a>
 
-  <img alt="bundle size" src="https://deno.bundlejs.com/badge?q=object-deep-copy,just-safe-get,just-safe-set,fast-deep-equal,flemme&treeshake=[{+default+as+objectDeepCopyDefault+}],[{+default+as+get+}],[{+default+as+set+}],[{+default+as+fastDeepEqual+}],[{+Flemme+}]">
+  <img alt="bundle size" src="https://deno.bundlejs.com/badge?q=flemme&treeshake=[{+createForm+}]">
 
   <img alt="Total coverage" src="https://raw.githubusercontent.com/SacDeNoeuds/flemme/refs/heads/main/modules/flemme/badges/coverage-total.svg">
 
@@ -44,13 +44,13 @@ Table of contents:
 - [Demos](#demos)
 - [Philosophy](#philosophy)
 - [API](#api)
-  - [createForm<T>{ initial, submit, validate?, validationTriggers? }](#createformt-initial-submit-validate-validationtriggers-)
+  - [createForm<T>{ initial, submit, validate?, validationTriggers? }](#createformt-initialvalues-submit-schema-validationtriggers-)
   - [Form](#form)
     - [`form.initialValues`](#forminitialvalues)
     - [`form.values`](#formvalues)
     - [`form.get(path)`](#formgetpath)
     - [`form.isDirty() & isDirtyAt(path)`](#formisdirty--isdirtyatpath)
-    - [`form.isVisited(path?)`](#formisvisitedpath)
+    - [`form.isTouched & isTouchedAt(path?)`](#formistouched--istouchedatpath)
     - [`form.set(values) / form.set(path, value)`](#formsetvalues--formsetpath-value)
     - [`form.reset(nextInitialValue?)`](#formresetnextinitialvalue)
     - [`form.resetAt(path, nextInitialValue?)`](#formresetatpath-nextinitialvalue)
@@ -58,12 +58,12 @@ Table of contents:
     - [`form.focus(path)`](#formfocuspath)
     - [`form.on(event, listener) / form.on(event, path, listener)`](#formonevent-listener--formonevent-path-listener)
     - [`form.validate()`](#formvalidate)
-    - [`form.errors()`](#formerrors)
+    - [`form.errors`](#formerrors)
     - [`form.isValid`](#formisvalid)
     - [`submit()`](#submit)
     - [`Form<T>`](#formt)
   - [Helpers](#helpers)
-    - [`addItemarray(value, atIndex?)`](#additemarray-value-atindex)
+    - [`addItem(array, value, atIndex?)`](#additemarray-value-atindex)
     - [`removeItem(array, index)`](#removeitemarray-index)
 
 ## Installation
@@ -84,16 +84,19 @@ npm i -D flemme
 // src/path/to/user-form.(js|ts)
 import { createForm, withSchema, addItem, removeItem /* for arrays */ } from 'flemme'
 
-export const makeUserProfileForm = (initialValue) => createForm({
-  initial: initialValue,
-  validate: withSchema(userSchema), // any standard schema is supported: zod's, valibot, unhoax, …
-  validationTriggers: ['change', 'blur', 'focus', 'reset', 'validated'], // all available triggers, pick only a subset of course (ideally one only)
+export const createUserProfileForm = (initialValues) => createForm({
+  initialValues,
+  schema: userSchema, // any standard schema is supported: zod's, valibot, unhoax, …
+
+  // all available triggers, pick only a subset of course (ideally one only)
+  // I advise ['change', 'blur']
+  validationTriggers: ['change', 'blur', 'focus', 'reset'],
   submit: async (values) => {
     await fetch('…', {})
   },
 })
 
-const form = makeUserProfileForm({
+const form = createUserProfileForm({
   name: { first: 'John', last: 'Doe' },
   birthDate: new Date('1968-05-18'),
   tags: ['awesome guy', 'great dude'],
@@ -163,21 +166,19 @@ About form **validation**, there already exist wonderful tools to validate schem
 - [jsonschema](https://github.com/tdegrunt/jsonschema) − validates [JSON Schema declarations](http://json-schema.org/)
 - …
 
-About form **state**, I figured that in every project at some point we use a utility library like lodash/underscore, therefore functions like `get`, `set` and `isEqual` are _already_ available. This library takes advantage of that and focuses on form state _only_ ; You bring your own validators − and I advise you use a tool mentioned above :innocent:
-
-Plus since TypeScript v4.1, lodash-path related function can be typed strongly, so using lodash-like path felt like a commonly known API to propose.
+Since TypeScript v4.1, lodash-path related function can be strongly typed, therefore using lodash-like path felt like a commonly known API to propose.
 
 Now you ought to know (if you don’t yet): a great framework-agnostic form library already exists: [final-form](https://final-form.org/). However, I find the API and config not to be _that_ straightforward. FYI, it’s 16.9kB and has a separate package for arrays while this one is 1.82KB.
 Another advantage of final-form is its very [complete ecosystem](https://final-form.org/docs/final-form/companion-libraries).
 
 ## API
 
-### `createForm<T>({ initial, submit, validate?, validationTriggers? })`
+### `createForm<T>({ initialValues, submit, schema?, validationTriggers? })`
 
 ```ts
 const createForm: <T>(options: {
-  initial: PartialDeep<T> // array or object
-  validate: (value: PartialDeep<T>) => FormErrors<T>
+  initialValues: T // array or object
+  schema: StandardSchema<T>
   validationTriggers: Array<'change' | 'blur' | 'focus' | 'reset' | 'validated'>
   submit: (values: T) => Promise<unknown>
 }) => Form<T>
@@ -225,7 +226,7 @@ form.get('user.name') // { first: string, last: string }
 
 #### `form.isDirty` & `isDirtyAt(path)`
 
-A property is marked as dirty when its value is deeply unequal to its initial value.
+A field is marked as "dirty" when its value is deeply unequal to its initial value.
 
 ```ts
 // Usage:
@@ -234,17 +235,17 @@ form.isDirtyAt('user.name.first') // check only a sub value
 form.isDirtyAt('user.name') // check only a subset of properties
 ```
 
-#### `form.isVisited(path?)`
+#### `form.isTouched` & `isTouchedAt(path)`
 
-A property is marked as visited when it has gained focus once. Only a `form.reset(path?)` unmarks the property as "visited".
+A field is marked as "touched" when it has gained focus once. Only a `form.reset(path?)` unmarks the field as "touched".
 
 ```ts
-type IsVisited = (path?: string) => boolean
+type IsTouched = (path?: string) => boolean
 
 // Usage:
-form.isVisited() // check the whole form
-form.isVisited('user.name.first') // check only a sub value
-form.isVisited('user.name') // check only a subset of properties
+form.isTouched // check the whole form
+form.isTouchedAt('user.name.first') // check only a sub value
+form.isTouchedAt('user.name') // check only a subset of properties
 ```
 
 #### `form.set(values)` / `form.set(path, value)`
@@ -394,7 +395,7 @@ interface On {
 
 #### `form.validate()`
 
-Populates form error with − your − `ValidationErrors` or `undefined`
+Populates form error with found errors or `undefined`
 
 Emits a `'validated'` event.
 
@@ -413,7 +414,7 @@ type Errors<FormValues> = {
 }
 
 // Usage:
-form.errors // your error value or `undefined`
+form.errors
 ```
 
 #### `form.isValid`
@@ -436,7 +437,7 @@ if (!form.isValid) {
 
 **NB:** Under the hood, it validates the form − if a `validate` function was provided −, and executes the handler **only** if the form is valid.
 
-Emits events `'submit'` when starting submission, and `'submitted'` when done (succeeding or failing).
+If the form is valid, it emits the event `'submit'` when starting submission, then `'submitted'` when done (succeeding or failing).
 
 ```ts
 export type Submit<T> = (handler: (value: T) => Promise<any>) => Promise<void>
@@ -468,19 +469,20 @@ export type Form<T> = {
   // readers
   readonly initialValues: T
   readonly values: T
-  readonly errors: FormErrors<T>
+  readonly errors: Array<{ message: string; path: Paths<T> }>
   readonly isValid: boolean
   readonly isDirty: boolean
+  readonly isTouched: boolean
 
-  get<P extends Paths<T>>(path: P): Get<T, P & string>
+  get<P extends Paths<T>>(path: P): Get<T, P>
 
   isDirtyAt(path: Paths<T>): boolean
-  isVisited(path?: Paths<T>): boolean
+  isTouchedAt(path: Paths<T>): boolean
 
   // actions/operations
   set: {
     (value: T): void
-    <P extends Paths<T>>(path: P, value: Get<T, P & string> | undefined): void
+    <P extends Paths<T>>(path: P, value: Get<T, P> | undefined): void
   }
 
   reset: (nextInitialValue?: T) => void
@@ -489,25 +491,19 @@ export type Form<T> = {
   blur: (path: Paths<T>) => void
   focus: (path: Paths<T>) => void
 
+  submit: () => Promise<unknown>
+  validate: () => void
+
   // events
   on: {
     <P extends Paths<T>>(event: 'reset' | 'change', path: P, listener: ChangeListener<T, P>): () => void
     (event: 'reset' | 'change', listener: ChangeListener<T>): () => void
     <P extends Paths<T>>(event: 'focus' | 'blur', path: P, listener: FocusListener<T, P>): () => void
     (event: 'focus' | 'blur', listener: FocusListener<T>): () => void
-    (event: 'validated', listener: ValidatedListener<ValidationErrors>): () => void
+    (event: 'validated', listener: () => void): () => void
     (event: 'submit', listener: (data: { values: T }) => unknown): () => void
     (event: 'submitted', listener: (data: { values: T; error?: unknown }) => unknown): () => void
   }
-
-  // form actions/operations:
-  /** Submit:
-   * 1. Set all paths as modified & visited
-   * 2. Reset after success
-   * 3. Restore user action performed while submitting if some
-   */
-  submit: () => Promise<unknown>
-  validate: () => void
 }
 ```
 
