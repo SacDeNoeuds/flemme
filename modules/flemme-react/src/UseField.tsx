@@ -1,15 +1,14 @@
 /* eslint-disable security/detect-object-injection */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { type Form, type FormEvent } from 'flemme'
+import { type Form, type FormEvent, type FlemmeGet as Get, type FlemmePaths as Paths } from 'flemme'
 import { Component, type ReactNode } from 'react'
-import type { Get, Paths } from 'type-fest'
 
 export type FieldState<FormValues, Path extends Paths<FormValues>> = {
   path: Path
   value: Get<FormValues, Path & string>
   initial: Get<FormValues, Path & string>
   isDirty: boolean
-  isVisited: boolean
+  isTouched: boolean
   change: (value: Get<FormValues, Path & string> | undefined) => void
   blur: () => void
   focus: () => void
@@ -20,20 +19,20 @@ const formEventsByWatchable: Record<Watchable, Exclude<FormEvent, 'submit' | 'su
   initial: ['reset'],
   value: ['change', 'reset'],
   isDirty: ['change', 'reset'],
-  isVisited: ['focus', 'reset'],
+  isTouched: ['focus', 'reset'],
   errors: ['validated'],
 }
 const formEvents: Exclude<FormEvent, 'submit' | 'submitted'>[] = ['reset', 'validated', 'change', 'blur', 'focus']
 
-type Props<FormValues, Path extends Paths<FormValues>, ValidationErrors> = {
-  form: Form<FormValues, ValidationErrors>
+type Props<FormValues, Path extends Paths<FormValues>> = {
+  form: Form<FormValues>
   path: Path
   watch?: Watchable[]
   children: (state: FieldState<FormValues, Path>) => ReactNode
 }
 
 export class UseField<FormValues, Path extends Paths<FormValues>, ValidationErrors> extends Component<
-  Props<FormValues, Path, ValidationErrors>,
+  Props<FormValues, Path>,
   FieldState<FormValues, Path>
 > {
   private watchers = this.props.watch
@@ -49,7 +48,7 @@ export class UseField<FormValues, Path extends Paths<FormValues>, ValidationErro
       value: form.get(path),
       initial: form.getInitial(path),
       isDirty: form.isDirtyAt(path),
-      isVisited: form.isVisited(path),
+      isTouched: form.isTouchedAt(path),
       change: (value) => form.set(path, value),
       blur: () => form.blur(path),
       focus: () => form.focus(path),

@@ -19,10 +19,10 @@
     "build": "rollup -c ./rollup.config.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "SacDeNoeuds <tojumster@gmail.com>",
+  "author": "SacDeNoeuds <sacdenoeuds.dev@gmail.com>",
   "repository": {
     "type": "git",
-    "url": "https://github.com/SacDeNoeuds/flemme/blob/main/bindings/react"
+    "url": "https://github.com/SacDeNoeuds/flemme/blob/main/modules/flemme-react"
   },
   "keywords": [
     "flemme",
@@ -33,11 +33,10 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "flemme": ">=0.3.0",
-    "react": ">=15"
+    "flemme": ">=0.3.0"
   },
   "devDependencies": {
-    "@types/react": "^19.1.0",
-    "react": "^19.1.0"
+    "@types/react": "^19.2.8",
+    "react": "^19.2.3"
   }
 }
