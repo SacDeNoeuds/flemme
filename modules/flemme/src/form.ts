@@ -355,7 +355,7 @@ export function createForm<T, Parsed>(options: CreateFormOptions<T, Parsed>): Fo
       message: issue.message,
       path: (issue.path?.map((segment) => (segment as any).key ?? segment).join('.') ?? '') as Paths<T>,
     }))
-    emit('validated', undefined)
+    emit('validated', {})
     return 'value' in result ? result.value : undefined
   }
 
