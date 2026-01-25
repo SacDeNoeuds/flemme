@@ -1,0 +1,44 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "chrome-devtools": {
+      "type": "local",
+      "command": ["./chrome-devtools-mcp-debug"]
+    },
+    "context7": {
+      "type": "remote",
+      "url": "https://mcp.context7.com/mcp",
+      "enabled": true
+    }
+  },
+  "provider": {
+    "lmstudio-local": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "LM Studio (local)",
+      "options": {
+        "baseURL": "http://127.0.0.1:1234/v1",
+        "timeout": false
+      },
+      "models": {
+        "openai/gpt-oss-20b": {
+          "name": "gpt-oss-20b"
+        },
+        "qwen/qwen3-coder-30b": {
+          "name": "qwen3-coder-30b"
+        },
+        "mistralai/ministral-3-14b-reasoning": {
+          "name": "mistralai/ministral-3-14b-reasoning"
+        },
+        "qwen2.5-coder-3b-instruct": {
+          "name": "qwen2.5-coder-3b-instruct"
+        },
+        "deepseek/deepseek-r1-0528-qwen3-8b": {
+          "name": "deepseek/deepseek-r1-0528-qwen3-8b"
+        },
+        "qwen/qwen3-14b": {
+          "name": "qwen/qwen3-14b"
+        }
+      }
+    }
+  }
+}
