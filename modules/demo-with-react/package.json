@@ -7,12 +7,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "flemme": "^0.3.2",
-    "flemme-react": "^0.1.1",
-    "just-pipe": "^1.0.0",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
-    "unhoax": "^0.8.1"
+    "flemme": "file:../flemme",
+    "flemme-react": "file:../flemme-react",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "unhoax": "^0.12.7",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@types/react": "^19.1.0",

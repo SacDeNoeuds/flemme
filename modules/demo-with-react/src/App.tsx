@@ -1,6 +1,6 @@
 import './App.css'
 import { sleep } from './lib/sleep'
-import { RegisterForm } from './RegisterForm/Component'
+import { RegistrationForm } from './RegistrationForm/Component'
 
 function App() {
   return (
@@ -10,7 +10,7 @@ function App() {
         Build with <a href="https://reactjs.org/">React</a> and{' '}
         <a href="https://sacdenoeuds.github.io/unhoax/">unhoax</a> 😉
       </p>
-      <RegisterForm
+      <RegistrationForm
         onRegister={async (values) => {
           await sleep(750)
           console.info('submitted:', values)
