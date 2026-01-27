@@ -1,0 +1,39 @@
+{
+  "name": "flemme-vue",
+  "version": "0.1.0",
+  "description": "Vue bindings for flemme",
+  "module": "build/esm/main.js",
+  "types": "build/esm/main.d.ts",
+  "type": "module",
+  "files": [
+    "build/",
+    "src/"
+  ],
+  "exports": {
+    ".": {
+      "import": "./build/esm/main.js"
+    }
+  },
+  "scripts": {
+    "prebuild": "rm -rf ./build",
+    "build": "rollup -c ./rollup.config.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "SacDeNoeuds <sacdenoeuds.dev@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SacDeNoeuds/flemme/blob/main/modules/flemme-vue"
+  },
+  "keywords": [
+    "flemme",
+    "form",
+    "form manager",
+    "form state",
+    "vue"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "flemme": ">=0.3.0",
+    "vue": ">=3.0.0"
+  }
+}

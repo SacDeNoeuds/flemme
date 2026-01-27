@@ -1,0 +1,18 @@
+{
+  "name": "@flemme/demo-with-vue",
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build --base=/flemme/with-react/",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "flemme": "file:../flemme",
+    "flemme-vue": "file:../flemme-vue",
+    "vue": "^3.5.27",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.3"
+  }
+}

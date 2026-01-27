@@ -1,4 +1,3 @@
-export type { Get as FlemmeGet, Paths as FlemmePaths } from 'type-fest'
 export {
   createForm,
   type CreateFormOptions,
@@ -8,5 +7,7 @@ export {
   type FormEvent,
   type Validate,
   type ValidationTriggerEvent,
+  type Path,
+  type PathValue,
 } from './form'
 export { addItem, removeItem } from './iterable'
