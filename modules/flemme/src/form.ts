@@ -16,7 +16,7 @@ export type ChangeListener<T, P extends Path<T> = ''> = '' extends P
 
 export type FocusListener<T, P extends Path<T> | '' = ''> = (data: { path: P }) => unknown
 
-export type Path<T> = Extract<Paths<T, { bracketNotation: false; depth: 20 }>, string> | '';
+export type Path<T> = Extract<Paths<T, { bracketNotation: false; maxRecursionDepth: 20 }>, string> | '';
 export type PathValue<T, P extends Path<T>> = Readonly<Get<T, P>>
 
 export type FormError<FormValues> = {
@@ -26,7 +26,12 @@ export type FormError<FormValues> = {
 export type FormErrors<FormValues> = ReadonlyArray<FormError<FormValues>> | undefined
 export type Validate<FormValues> = (values: FormValues) => FormErrors<FormValues>
 
-export type Form<T> = {
+export type SubmittedEventData<T, Parsed> =
+  | { state: 'success'; values: T }
+  | { state: 'failure'; step: 'validation', errors: NonNullable<FormErrors<T>>; values: T }
+  | { state: 'failure'; step: 'submission'; values: Parsed; error: unknown }
+
+export type Form<T, Parsed> = {
   // readers
   readonly initialValues: T
   readonly values: T
@@ -197,7 +202,7 @@ export type Form<T> = {
      *
      * See {@link Form.submit} for more details
      */
-    (event: 'submitted', listener: (data: { values: T; error?: unknown }) => unknown): () => void
+    (event: 'submitted', listener: (data: SubmittedEventData<T, Parsed>) => unknown): () => void
   }
 
   // form actions/operations:
@@ -233,7 +238,7 @@ export type CreateFormOptions<T, Parsed> = {
   submit: (values: Parsed) => Promise<unknown>
 }
 
-export function createForm<T, Parsed>(options: CreateFormOptions<T, Parsed>): Form<T> {
+export function createForm<T, Parsed>(options: CreateFormOptions<T, Parsed>): Form<T, Parsed> {
   const { schema, validationTriggers = [] } = options
   // readers
   let initialValue = clone(options.initialValues)
@@ -261,7 +266,7 @@ export function createForm<T, Parsed>(options: CreateFormOptions<T, Parsed>): Fo
     listeners[event].forEach((listener) => listener(data))
   }
 
-  const form: Form<T> = {
+  const form: Form<T, Parsed> = {
     // readers
     get initialValues() {
       return initialValue
@@ -329,18 +334,22 @@ export function createForm<T, Parsed>(options: CreateFormOptions<T, Parsed>): Fo
 
     submit: async (): Promise<any> => {
       const parsed = validate()
-      if (form.errors) throw new Error('invalid form data')
+      if (form.errors) {
+        // throw new Error('invalid form data', { cause: form.errors })
+        emit('submitted', { state: 'failure', step: 'validation', values: form.values, errors: form.errors })
+        return;
+      }
       submitting = true
       const snapshot = parsed!
       try {
         emit('submit', { values: snapshot })
         const result = await options.submit(snapshot)
         submitting = false
-        emit('submitted', { values: snapshot, error: undefined })
+        emit('submitted', { state: 'success', values: snapshot })
         form.reset(form.values)
         return result
       } catch (error) {
-        emit('submitted', { values: snapshot, error })
+        emit('submitted', { state: 'failure', step: 'submission', values: snapshot, error })
       } finally {
         submitting = false
         restoreInteractionsWhileSubmitting()

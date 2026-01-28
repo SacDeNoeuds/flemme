@@ -1,6 +1,18 @@
 import { createForm } from 'flemme-vue'
 import z from 'zod'
 
+interface UserTag {
+  id: string
+  label: string
+}
+
+export interface FormValues {
+  username: string
+  password: string
+  confirmation: string
+  tags: UserTag[]
+}
+
 const registrationFormValuesSchema = z
   .object({
     username: z.string().min(4).max(233),
@@ -10,12 +22,9 @@ const registrationFormValuesSchema = z
   })
   .refine((values) => values.password === values.confirmation, {
     message: 'Passwords must match',
-  })
+  }) satisfies z.ZodType<FormValues, FormValues>
 
-export interface FormValues extends z.input<typeof registrationFormValuesSchema> {}
-export interface FormParsedValues extends z.output<typeof registrationFormValuesSchema> {}
-
-export const [useRegistrationForm, useRegistrationFormField] = createForm<FormValues, FormParsedValues>({
+export const [useRegistrationForm, useRegistrationFormField] = createForm<FormValues>({
   schema: registrationFormValuesSchema,
   validationTriggers: ['blur'],
   defaultInitialValues: {

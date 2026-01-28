@@ -8,7 +8,7 @@ import {
   type Path,
   type PathValue,
 } from 'flemme';
-import { computed, MaybeRefOrGetter, readonly, Ref, ref, toValue, watchEffect } from 'vue';
+import { computed, MaybeRef, MaybeRefOrGetter, readonly, Ref, ref, toValue, watchEffect } from 'vue';
 
 type Options<T, Output> = {
   initialValues?: MaybeRefOrGetter<T | undefined>;
@@ -18,9 +18,9 @@ type Options<T, Output> = {
 export type UseForm<T, Output> = (options: Options<T, Output>) => {
   readonly values: Readonly<Ref<T>>
   readonly errors: Readonly<Ref<FormErrors<T>>>
-  readonly submit: Form<T>['submit'];
-  readonly validate: Form<T>['validate'];
-  readonly reset: Form<T>['reset'];
+  readonly submit: Form<T, Output>['submit'];
+  readonly validate: Form<T, Output>['validate'];
+  readonly reset: Form<T, Output>['reset'];
 }
 
 export type UseField<T> = <P extends Path<T>>(path: MaybeRefOrGetter<P>) => FieldState<T, P>
@@ -31,63 +31,76 @@ type FormDefaults<T, Output> = {
   schema: CreateFormOptions<T, Output>['schema'];
 }
 
-const createVueForm = <T, Output>(
-  defaults: FormDefaults<T, Output>,
-): [UseForm<T, Output>, UseField<T>] => {
-  let form: Ref<Form<T>>
+function createVueForm<T, Output>(defaults: FormDefaults<T, Output>): [UseForm<T, Output>, UseField<T>]
+function createVueForm<T>(defaults: FormDefaults<T, T>): [UseForm<T, T>, UseField<T>]
+function createVueForm<T, Output>(defaults: FormDefaults<T, Output>): [UseForm<T, Output>, UseField<T>] {
+  let form: Ref<Form<T, Output>>;
   const useForm: UseForm<T, Output> = (options) => {
     form = computed(() => createForm({
       initialValues: toValue(options.initialValues) ?? defaults.defaultInitialValues,
       schema: defaults.schema,
       validationTriggers: toValue(options.validationTriggers) ?? defaults.validationTriggers,
       submit: toValue(options.submit),
-    }))
+    }));
     return {
       get values() {
         return useFormValues(form);
       },
       get errors() {
-        return useFormErrors(form)
+        return useFormErrors(form);
       },
       validate: () => form.value.validate(),
       reset: (initialValues) => form.value.reset(initialValues),
       submit: () => form.value.submit(),
-    }
-  }
+    };
+  };
 
   const useField: UseField<T> = (path) => {
-    if (!form) throw new Error('you must call `useXxForm` before `useXxField` (see …)')
-    return useFormField(form, path)
-  }
+    if (!form) throw new Error('you must call `useXxForm` before `useXxField` (see …)');
+    return useFormField(form, path);
+  };
 
-  return [useForm, useField]
+  return [useForm, useField];
 }
 
 export { createVueForm as createForm };
 
-const useFormErrors: <T>(form: Ref<Form<T>>) => Ref<FormErrors<T>> =
+const useFormErrors: <T>(form: Ref<Form<T, any>>) => Ref<FormErrors<T>> =
   makeComposable(['validated'], (form) => form.errors)
-const useFormValues: <T>(form: Ref<Form<T>>) => Ref<Readonly<T>> =
+const useFormValues: <T>(form: Ref<Form<T, any>>) => Ref<Readonly<T>> =
   makeComposable(['change'], (form) => form.values)
 
-type UseTouched = <T, P extends Path<T>>(form: Ref<Form<T>>, path?: MaybeRefOrGetter<P>) => Readonly<Ref<boolean>>
+type UseTouched = <T, P extends Path<T>>(form: Ref<Form<T, any>>, path?: MaybeRefOrGetter<P>) => Readonly<Ref<boolean>>
 const useTouched: UseTouched = makeComposable(['focus', 'reset', 'validated'], (form, path) =>
   form.isTouchedAt(path as never),
 ) as any
 
-type UseDirty = <T, P extends Path<T>>(form: Ref<Form<T>>, path?: MaybeRefOrGetter<P>) => Readonly<Ref<boolean>>
+type UseDirty = <T, P extends Path<T>>(form: Ref<Form<T, any>>, path?: MaybeRefOrGetter<P>) => Readonly<Ref<boolean>>
 const useDirty: UseDirty = makeComposable(['change', 'reset'], (form, path) =>
   path ? form.isDirty : form.isDirtyAt(path as never),
 ) as any
 
-type UseValue = <T, P extends Path<T>>(form: Ref<Form<T>>, path: MaybeRefOrGetter<P>) => Ref<PathValue<T, P>>
+type UseValue = <T, P extends Path<T>>(form: Ref<Form<T, any>>, path: MaybeRefOrGetter<P>) => Ref<PathValue<T, P>>
 const useValue: UseValue = makeComposable(['change', 'reset'], (form, path) => form.get(path as never)) as any
 
-type UseInitial = <T, P extends Path<T>>(form: Ref<Form<T>>, path: MaybeRefOrGetter<P>) => Readonly<Ref<PathValue<T, P>>>
+type UseInitial = <T, P extends Path<T>>(form: Ref<Form<T, any>>, path: MaybeRefOrGetter<P>) => Readonly<Ref<PathValue<T, P>>>
 const useInitial: UseInitial = makeComposable(['change', 'reset'], (form, path) => form.getInitial(path as never)) as any
 
+const useFormHasBeenSubmitted = <T, Output>(form: MaybeRefOrGetter<Form<T, Output>>) => {
+  const hasBeenSubmitted = ref(false);
+  const willSetTo = (value: boolean) => () => {
+    hasBeenSubmitted.value = value;
+  }
+  watchEffect((onCleanup) => {
+    const theForm = toValue(form);
+    onCleanup(theForm.on('submitted', willSetTo(true)));
+    onCleanup(theForm.on('reset', willSetTo(false)));
+  });
+  return readonly(hasBeenSubmitted)
+}
+
 type FieldState<T, P extends Path<T>> = ReturnType<typeof useFormField<T, P>>
-const useFormField = <T, P extends Path<T>>(form: Ref<Form<T>>, path: MaybeRefOrGetter<P>) => {
+const useFormField = <T, P extends Path<T>>(form: Ref<Form<T, any>>, path: MaybeRefOrGetter<P>) => {
   return {
     path: computed(() => toValue(path)),
     get value(): Ref<PathValue<T, P>> {
@@ -108,38 +121,31 @@ const useFormField = <T, P extends Path<T>>(form: Ref<Form<T>>, path: MaybeRefOr
       return useDirty(form, path)
     },
     get isTouched(): Ref<boolean> {
-      watchEffect((onCleanup) => {
-        const thePath = toValue(path)
-        console.debug('run effect for', thePath);
-        const unsubscribe = form.value.on('validated', () => {
-          console.debug('checking touched for', thePath)
-          form.value.focus(thePath)
-          form.value.blur(thePath)
-        })
-        onCleanup(unsubscribe)
-      })
       return useTouched(form, path)
+    },
+    get hasFormBeenSubmitted(): Ref<boolean> {
+      return useFormHasBeenSubmitted(form);
     },
     blur: () => form.value.blur(toValue(path)),
     focus: () => form.value.focus(toValue(path)),
   }
 }
 
-function makeComposable<U>(events: FormEvent[], getter: (form: Form<any>, path?: string) => U) {
-  return (form: Ref<Form<any>>, path?: MaybeRefOrGetter<string>): Ref<any> => {
+function makeComposable<U>(events: FormEvent[], getter: (form: Form<any, any>, path?: string) => U) {
+  return (form: Ref<Form<any, any>>, path?: MaybeRefOrGetter<string>): Ref<any> => {
     const state = ref(getter(form.value, toValue(path)))
 
-    watchEffect(() => {
-      const listener = () => {
-        state.value = getter(form.value, toValue(path))
-      }
+    const listener = () => {
+      state.value = getter(form.value, toValue(path))
+    }
+    watchEffect((onCleanup) => {
+      const thePath = toValue(path)
       const subscribers = events.map((event) => {
-        const p = toValue(path)
-        return p ? form.value.on(event as any, p as never, listener) : form.value.on(event as any, listener)
+        return thePath ? form.value.on(event as any, thePath as never, listener) : form.value.on(event as any, listener)
       })
-      return () => {
+      onCleanup(() => {
         subscribers.forEach((unsubscribe) => unsubscribe())
-      }
+      })
     })
 
     return readonly(state)

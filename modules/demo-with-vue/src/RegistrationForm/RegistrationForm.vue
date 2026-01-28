@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, toRef } from 'vue'
-import { type FormParsedValues, type FormValues, useRegistrationForm } from './form'
+import { type FormValues, useRegistrationForm } from './form'
 import UsernameField from './UsernameField.vue'
 import PasswordField from './PasswordField.vue'
 import TagFields from './TagFields.vue'
@@ -8,7 +8,7 @@ import Errors from './Errors.vue'
 
 type Props = {
   initialValues?: FormValues
-  register: (values: FormParsedValues) => Promise<unknown>
+  register: (values: FormValues) => Promise<unknown>
 }
 const props = defineProps<Props>();
 
@@ -21,6 +21,8 @@ enum SubmitState {
 
 const submitState = ref(SubmitState.NotAsked)
 const submittedValues = ref<FormValues>()
+
+// const mutation = useMutation({ mutation() { … } });
 
 const { values, errors, submit } = useRegistrationForm({
   initialValues: toRef(props, 'initialValues'),
