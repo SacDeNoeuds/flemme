@@ -10,20 +10,28 @@ export type FormEvent = (typeof formEvents)[number]
 export type ValidationTriggerEvent = Exclude<FormEvent, 'validated' | 'submit' | 'submitted'>
 type Listener = (data: { path: string; [Key: string]: any }) => void
 
-export type ChangeListener<T, P extends Paths<T> | '' = ''> = '' extends P
+export type ChangeListener<T, P extends Path<T> = ''> = '' extends P
   ? (data: { path: ''; previous: T; next: T }) => unknown
-  : (data: { path: P; previous: Get<T, P & string>; next: Get<T, P & string> }) => unknown
+  : (data: { path: P; previous: PathValue<T, P>; next: PathValue<T, P> }) => unknown
 
-export type FocusListener<T, P extends Paths<T> | '' = ''> = (data: { path: P }) => unknown
+export type FocusListener<T, P extends Path<T> | '' = ''> = (data: { path: P }) => unknown
+
+export type Path<T> = Extract<Paths<T, { bracketNotation: false; maxRecursionDepth: 20 }>, string> | ''
+export type PathValue<T, P extends Path<T>> = Readonly<Get<T, P>>
 
 export type FormError<FormValues> = {
   message: string
-  path: Paths<FormValues>
+  path: Path<FormValues>
 }
 export type FormErrors<FormValues> = ReadonlyArray<FormError<FormValues>> | undefined
 export type Validate<FormValues> = (values: FormValues) => FormErrors<FormValues>
 
-export type Form<T> = {
+export type SubmittedEventData<T, Parsed> =
+  | { state: 'success'; values: T }
+  | { state: 'failure'; step: 'validation'; errors: NonNullable<FormErrors<T>>; values: T }
+  | { state: 'failure'; step: 'submission'; values: Parsed; error: unknown }
+
+export type Form<T, Parsed> = {
   // readers
   readonly initialValues: T
   readonly values: T
@@ -49,21 +57,21 @@ export type Form<T> = {
    */
   readonly isTouched: boolean
 
-  get: <P extends Paths<T>>(path: P) => Get<T, P & string>
-  getInitial: <P extends Paths<T>>(path: P) => Get<T, P & string>
+  get: <P extends Path<T>>(path: P) => PathValue<T, P & string>
+  getInitial: <P extends Path<T>>(path: P) => PathValue<T, P & string>
 
   /**
    * `true` if the value is deeply equal to the initial values, no matter if the field has been "touched" or not (see {@link Form.isTouchedAt})
    * @example
    * form.isDirtyAt('user.name.first')
    */
-  isDirtyAt: (path: Paths<T>) => boolean
+  isDirtyAt: (path: Path<T>) => boolean
   /**
    * A field is marked as touched when it has gained focus once.
    *
    * Only a {@link Form.reset} or {@link Form.resetAt} can mark a field as non-touched again.
    */
-  isTouchedAt: (path: Paths<T>) => boolean
+  isTouchedAt: (path: Path<T>) => boolean
 
   /**
    * Can be used to set the whole form value or a nested value by providing a path.
@@ -79,7 +87,7 @@ export type Form<T> = {
    */
   set: {
     (value: T): void
-    <P extends Paths<T>>(path: P, value: Get<T, P & string> | undefined): void
+    <P extends Path<T>>(path: P, value: PathValue<T, P & string> | undefined): void
   }
 
   /**
@@ -93,19 +101,19 @@ export type Form<T> = {
    *
    * @fires reset
    */
-  resetAt: <P extends Paths<T>>(path: P, nextInitialValue?: Get<T, P & string>) => void
+  resetAt: <P extends Path<T>>(path: P, nextInitialValue?: PathValue<T, P & string>) => void
 
   /**
    * Triggers validation if {@link CreateFormOptions} `validationTriggers` includes the value `'blur'`
    */
-  blur: (path: Paths<T>) => void
+  blur: (path: Path<T>) => void
   /**
    * Marks the field as `touched` (see {@link Form.isTouchedAt})
    *
    * @fires focus
    * @fires validated if {@link CreateFormOptions.validationTriggers} includes the value `'focus'`
    */
-  focus: (path: Paths<T>) => void
+  focus: (path: Path<T>) => void
 
   on: {
     /**
@@ -120,7 +128,7 @@ export type Form<T> = {
      * // will be triggered only when `name`, `name.first` or `name.last` changes.
      * form.on('change', 'name', ({ previous, next }) => {})
      */
-    <P extends Paths<T>>(event: 'change', path: P, listener: ChangeListener<T, P>): () => void
+    <P extends Path<T>>(event: 'change', path: P, listener: ChangeListener<T, P>): () => void
     (event: 'change', listener: ChangeListener<T>): () => void
 
     /**
@@ -137,7 +145,7 @@ export type Form<T> = {
      * form.resetAt('name')
      * form.reset()
      */
-    <P extends Paths<T>>(event: 'reset', path: P, listener: ChangeListener<T, P>): () => void
+    <P extends Path<T>>(event: 'reset', path: P, listener: ChangeListener<T, P>): () => void
     (event: 'reset', listener: ChangeListener<T>): () => void
 
     /**
@@ -151,7 +159,7 @@ export type Form<T> = {
      * // the event is triggered by:
      * form.focus('name.first')
      */
-    <P extends Paths<T>>(event: 'focus', path: P, listener: FocusListener<T, P>): () => void
+    <P extends Path<T>>(event: 'focus', path: P, listener: FocusListener<T, P>): () => void
     (event: 'focus', listener: FocusListener<T>): () => void
 
     /**
@@ -165,7 +173,7 @@ export type Form<T> = {
      * // the event is triggered by:
      * form.blur('name.first')
      */
-    <P extends Paths<T>>(event: 'blur', path: P, listener: FocusListener<T, P>): () => void
+    <P extends Path<T>>(event: 'blur', path: P, listener: FocusListener<T, P>): () => void
     (event: 'blur', listener: FocusListener<T>): () => void
 
     /**
@@ -194,7 +202,7 @@ export type Form<T> = {
      *
      * See {@link Form.submit} for more details
      */
-    (event: 'submitted', listener: (data: { values: T; error?: unknown }) => unknown): () => void
+    (event: 'submitted', listener: (data: SubmittedEventData<T, Parsed>) => unknown): () => void
   }
 
   // form actions/operations:
@@ -230,7 +238,7 @@ export type CreateFormOptions<T, Parsed> = {
   submit: (values: Parsed) => Promise<unknown>
 }
 
-export function createForm<T, Parsed>(options: CreateFormOptions<T, Parsed>): Form<T> {
+export function createForm<T, Parsed>(options: CreateFormOptions<T, Parsed>): Form<T, Parsed> {
   const { schema, validationTriggers = [] } = options
   // readers
   let initialValue = clone(options.initialValues)
@@ -258,7 +266,7 @@ export function createForm<T, Parsed>(options: CreateFormOptions<T, Parsed>): Fo
     listeners[event].forEach((listener) => listener(data))
   }
 
-  const form: Form<T> = {
+  const form: Form<T, Parsed> = {
     // readers
     get initialValues() {
       return initialValue
@@ -279,20 +287,20 @@ export function createForm<T, Parsed>(options: CreateFormOptions<T, Parsed>): Fo
       return touched.size > 0
     },
 
-    get: (path: Paths<T>): any => get(values, path as never),
-    getInitial: (path: Paths<T>): any => get(initialValue, path as never),
+    get: (path: Path<T>): any => get(values, path as never),
+    getInitial: (path: Path<T>): any => get(initialValue, path as never),
 
-    isDirtyAt: (path: Paths<T>) => !isEqual(get(values, path as never), get(initialValue, path as never)),
+    isDirtyAt: (path: Path<T>) => !isEqual(get(values, path as never), get(initialValue, path as never)),
 
-    isTouchedAt: (path: Paths<T>) => some(touched, (subpath) => subpath.startsWith(path as any)),
+    isTouchedAt: (path: Path<T>) => some(touched, (subpath) => subpath.startsWith(path as any)),
 
     // actions/operations
     set: (...args: any[]) => (args.length === 1 ? changeForm(args[0]) : changeField(args[0], args[1])),
 
-    blur: (path: Paths<T>) => {
+    blur: (path: Path<T>) => {
       emit('blur', { path })
     },
-    focus: (path: Paths<T>) => {
+    focus: (path: Path<T>) => {
       touched.add(path as string)
       if (submitting) touchedWhileSubmitting.add(path as string)
       emit('focus', { path })
@@ -321,23 +329,27 @@ export function createForm<T, Parsed>(options: CreateFormOptions<T, Parsed>): Fo
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     on: (
-      ...args: [event: FormEvent, listener: Listener] | [event: FormEvent, path: `${Paths<T>}`, listener: Listener]
+      ...args: [event: FormEvent, listener: Listener] | [event: FormEvent, path: `${Path<T>}`, listener: Listener]
     ) => (args.length === 2 ? onForm(...args) : onField(...args)),
 
     submit: async (): Promise<any> => {
       const parsed = validate()
-      if (form.errors) throw new Error('invalid form data')
+      if (form.errors) {
+        // throw new Error('invalid form data', { cause: form.errors })
+        emit('submitted', { state: 'failure', step: 'validation', values: form.values, errors: form.errors })
+        return
+      }
       submitting = true
       const snapshot = parsed!
       try {
         emit('submit', { values: snapshot })
         const result = await options.submit(snapshot)
         submitting = false
-        emit('submitted', { values: snapshot, error: undefined })
+        emit('submitted', { state: 'success', values: snapshot })
         form.reset(form.values)
         return result
       } catch (error) {
-        emit('submitted', { values: snapshot, error })
+        emit('submitted', { state: 'failure', step: 'submission', values: snapshot, error })
       } finally {
         submitting = false
         restoreInteractionsWhileSubmitting()
@@ -353,7 +365,7 @@ export function createForm<T, Parsed>(options: CreateFormOptions<T, Parsed>): Fo
     if (result instanceof Promise) throw new Error('async validation is not supported')
     errors = result.issues?.map((issue) => ({
       message: issue.message,
-      path: (issue.path?.map((segment) => (segment as any).key ?? segment).join('.') ?? '') as Paths<T>,
+      path: (issue.path?.map((segment) => (segment as any).key ?? segment).join('.') ?? '') as Path<T>,
     }))
     emit('validated', {})
     return 'value' in result ? result.value : undefined
