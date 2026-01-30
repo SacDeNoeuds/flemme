@@ -7,6 +7,6 @@ To get started, head to [the core package](https://github.com/SacDeNoeuds/flemme
 Bindings are:
 
 - [React](https://github.com/SacDeNoeuds/flemme/tree/main/bindings/react)
+- [Vue](https://github.com/SacDeNoeuds/flemme/tree/main/bindings/vue)
 - [HTML/DOM](https://github.com/SacDeNoeuds/flemme/tree/main/bindings/dom)
 - Svelte (coming soon)
-- Vue (coming soon)
