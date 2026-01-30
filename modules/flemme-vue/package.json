@@ -17,6 +17,7 @@
   "scripts": {
     "prebuild": "rm -rf ./build",
     "build": "rollup -c ./rollup.config.js",
+    "prepack": "npm run build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "SacDeNoeuds <sacdenoeuds.dev@gmail.com>",
