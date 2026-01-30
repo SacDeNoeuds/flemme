@@ -33,7 +33,9 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "flemme": ">=0.3.0",
     "vue": ">=3.0.0"
+  },
+  "dependencies": {
+    "flemme": "^0.4.0"
   }
 }

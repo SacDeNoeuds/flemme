@@ -1,5 +1,6 @@
 [![npm version](https://badge.fury.io/js/flemme-vue.svg)](https://badge.fury.io/js/flemme-vue)
 [![Downloads](https://img.shields.io/npm/dm/flemme-vue.svg)](https://www.npmjs.com/package/flemme-vue)
+<img alt="bundle size" src="https://deno.bundlejs.com/badge?q=flemme-vue&treeshake=[{+createForm+}]">
 
 <!-- [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/SacDeNoeuds) -->
 
