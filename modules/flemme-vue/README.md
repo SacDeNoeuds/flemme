@@ -33,8 +33,7 @@ npm i -S flemme-vue
 ### 1. Define your form in a composable
 
 For example, let's take a registration form:
-Type-first approach
-Using TypeScript interfaces allows types to have proper name rather than displaying the type contents. A type content can be cryptic while a type name is always explicit.
+Using a type-first approach with TypeScript interfaces allows types to have proper name rather than displaying the type contents. A type content can be cryptic while a type name is always explicit.
 
 ```ts
 import { RegistrationFormValues } from '@standard-schema/spec'
@@ -97,23 +96,7 @@ const props = defineProps<Props>()
 // trivial type, use your own `RemoteData`-ish from your projects, ie: a @pinia/colada mutation
 type SubmitState = 'notAsked' | 'pending' | 'failure' | 'success'
 const submitState = ref<SubmitState>('notAsked')
-<!-- TOC -->
 
-- [flemme-vue](#flemme-vue)
-  - [Table of contents](#table-of-contents)
-  - [Installation](#installation)
-  - [Usage](#usage)
-    - [Define your form in a composable](#define-your-form-in-a-composable)
-    - [Define the form component](#define-the-form-component)
-    - [a. Define a field component for a top level value](#a-define-a-field-component-for-a-top-level-value)
-    - [b. Define a field component for a nested value](#b-define-a-field-component-for-a-nested-value)
-    - [Define a field component for an array value](#define-a-field-component-for-an-array-value)
-    - [Define a field component for a nested array value](#define-a-field-component-for-a-nested-array-value)
-    - [Define an error component](#define-an-error-component)
-  - [Design decisions](#design-decisions)
-  - [Limitations](#limitations)
-
-<!-- /TOC -->
 const { submit } = useRegistrationForm({
   initialValues: toRef(props, 'initialValues'),
   submit: toRef(props, 'submit'),
