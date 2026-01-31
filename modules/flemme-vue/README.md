@@ -268,6 +268,7 @@ The `useForm` composable (in `const [useForm] = createForm(…)`) does _not_ pro
 
 ## Limitations
 
+- Async validation is not supported.
 - A form can only be used once per page, no concurrent forms.
 - Dots in property names are disallowed because they clash with `path` handling.
 - Form values are necessarily an object or an array. If you have one value only, wrap it into a property.

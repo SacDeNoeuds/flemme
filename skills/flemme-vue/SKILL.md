@@ -294,6 +294,8 @@ export interface RegistrationFormValues {
 }
 ```
 
+**NB**: step-specific validation _must_ be implemented via the schema definition, like zod's `.refine` function for instance.
+
 As mentioned in examples above, define fields individually:
 
 - EmailField – for `email`
@@ -350,6 +352,7 @@ const step = ref<1 | 2 | 3>(1);
 
 ## Limitations
 
+- Async validation is not supported.
 - A form can only be used once per page, no concurrent forms.
 - Dots in property names are disallowed because they clash with `path` handling.
 - Form values are necessarily an object or an array. If you have one value only, wrap it into a property.

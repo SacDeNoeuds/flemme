@@ -24,7 +24,6 @@ export type FormError<FormValues> = {
   path: Path<FormValues>
 }
 export type FormErrors<FormValues> = ReadonlyArray<FormError<FormValues>>
-export type Validate<FormValues> = (values: FormValues) => FormErrors<FormValues>
 
 export type SubmittedEventData<T, Parsed> =
   | { state: 'success'; values: T }
