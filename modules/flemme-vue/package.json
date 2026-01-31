@@ -1,6 +1,6 @@
 {
   "name": "flemme-vue",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Vue bindings for flemme",
   "module": "build/esm/main.js",
   "types": "build/esm/main.d.ts",
