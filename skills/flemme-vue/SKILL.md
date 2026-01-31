@@ -269,6 +269,85 @@ const formValuesSchema = z.object({
 })
 ```
 
+### Multi-step forms
+
+Picture a 3-step registration with:
+
+1. account info: email and password
+2. profile info: first name, last name and birth date
+3. billing address
+
+Adapt the form values shape to match each step:
+
+```ts
+export interface RegistrationFormValues {
+  account: {
+    email: string
+    password: string
+  }
+  profile: {
+    firstName: string;
+    lastName: string;
+    birthDate: Date;
+  }
+  billingAddress: { … }
+}
+```
+
+As mentioned in examples above, define fields individually:
+
+- EmailField – for `email`
+- PasswordField – for `password`
+- NameField – for `firstName` and `lastName`
+- AddressField
+- …
+
+Define a component per step, for instance:
+
+- `RegistrationFormStep1` or `RegistrationFormAccountStep`
+- `RegistrationFormStep2` or `RegistrationFormPersonalInfoStep`
+- `RegistrationFormStep3` or `RegistrationFormBillingAddressStep`
+
+ie, `RegistrationFormAccountStep`:
+
+```vue
+<script setup lang="ts">
+import { useRegistrationFormField } from './useRegistrationForm'
+
+const emit = defineEmit<(event: 'submit') => void>()
+const { isValid } = useRegistrationFormField('account')
+</script>
+
+<template>
+  <form @submit.prevent="() => emit('submit')">
+    <!-- Insert fields here -->
+
+    <!-- Cannot go to step 2 until account info is valid -->
+    <button type="submit" :disabled="!isValid">Go to next step</button>
+  </form>
+</template>
+```
+
+And finally a `RegistrationForm` component
+
+```vue
+<script setup lang="ts">
+import { ref } from 'vue'
+import { useRegistrationForm } from './useRegistrationForm'
+import RegistrationFormAccountStep from './RegistrationFormAccountStep.vue'
+import RegistrationFormPersonalInfoStep from './RegistrationFormPersonalInfoStep.vue'
+import RegistrationFormBillingAddressStep from './RegistrationFormBillingAddressStep.vue'
+
+const { submit } = useRegistrationForm(…)
+const step = ref<1 | 2 | 3>(1);
+</script>
+<template>
+  <RegistrationFormAccountStep v-if="step === 1" @submit="step = 2" />
+  <RegistrationFormPersonalInfoStep v-else-if="step === 2" @submit="step = 3" />
+  <RegistrationFormBillingAddressStep v-else-if="step === 3" @submit="submit" />
+</template>
+```
+
 ## Limitations
 
 - A form can only be used once per page, no concurrent forms.
