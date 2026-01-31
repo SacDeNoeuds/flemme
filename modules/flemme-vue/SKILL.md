@@ -249,3 +249,12 @@ const shouldDisplayErrorIfAny = computed(() => isTouched.value || hasFormBeenSub
 - Dots in property names are disallowed because they clash with `path` handling.
 - Form values are necessarily an object or an array. If you have one value only, wrap it into a property.
 - Only object, arrays and primitives are supported. Typically `Set` and `Map` are not supported.
+
+## Recommendations
+
+### Do not check validity, do something with errors instead
+
+The `useForm` composable (in `const [useForm] = createForm(…)`) does _not_ provide any `isValid` state because:
+
+1. You can check the existence of errors for validity – `errors.length === 0`
+2. `isValid` is usually used to block submission, which is a UI anti-pattern ; forms should allow submission and report errors either via field hints or another mechanism like modals or dialogs

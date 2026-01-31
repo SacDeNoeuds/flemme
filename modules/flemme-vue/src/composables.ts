@@ -133,7 +133,7 @@ const useFormField = <T, P extends Path<T>>(form: Ref<Form<T, any>>, path: Maybe
     },
     get errorMessage(): Readonly<Ref<string | undefined>> {
       const errors = useFormErrors(form)
-      return computed(() => errors.value?.find((error) => error.path === toValue(path))?.message)
+      return computed(() => errors.value.find((error) => error.path === toValue(path))?.message)
     },
     get isDirty(): Readonly<Ref<boolean>> {
       return useDirty(form, path)

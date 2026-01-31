@@ -1,6 +1,6 @@
 [![npm version](https://badge.fury.io/js/flemme-vue.svg)](https://badge.fury.io/js/flemme-vue)
 [![Downloads](https://img.shields.io/npm/dm/flemme-vue.svg)](https://www.npmjs.com/package/flemme-vue)
-<img alt="bundle size" src="https://deno.bundlejs.com/badge?q=flemme-vue&treeshake=[{+createForm+}]">
+<img alt="bundle size" src="https://deno.bundlejs.com/badge?q=flemme-vue&treeshake=%5B%7B+createForm+%7D%5D&config=%7B%22esbuild%22%3A%7B%22external%22%3A%5B%22vue%22%5D%7D%7D">
 
 <!-- [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/SacDeNoeuds) -->
 
@@ -260,6 +260,11 @@ const shouldDisplayErrorIfAny = computed(() => isTouched.value || hasFormBeenSub
 ## Design decisions
 
 This library only exposes a composable API on purpose, there is no plan to support a component API.
+
+The `useForm` composable (in `const [useForm] = createForm(…)`) does _not_ provide any `isValid` state because:
+
+1. You can check the existence of `errors` for validity
+2. `isValid` is usually used to block submission, which is a UI anti-pattern ; forms should allow submission and report errors either via field hints or another mechanism like modals or dialogs
 
 ## Limitations
 
