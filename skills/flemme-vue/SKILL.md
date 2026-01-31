@@ -3,15 +3,23 @@ name: flemme-vue
 description: Build re-usable type-safe forms in Vue with flemme
 ---
 
+# How to use flemme-vue
+
+## When to use
+
+- You need to build a form in Vue using Composition API.
+- You want proper validation, error messages and state.
+
+When NOT to use:
+
+- for forms with no validation
+- for forms with dead-simple states
+
 ## Installation
 
 ```bash
 npm i -S flemme-vue
 ```
-
-## When to use
-
-When building re-usable type-safe forms for a Vue application.
 
 ## Usage
 
@@ -151,7 +159,7 @@ const { value, focus, blur, path } = useRegistrationFormField('name.first')
 
 ### 4. Define a field component for an array value
 
-Let's take the example of tags of shape `type Tag = { id: string, label: string }`
+Let's take the example of tags of shape `type Tag = { id: string, label: string }` with a min length of 1.
 
 ```vue
 <script setup lang="ts">
@@ -181,6 +189,9 @@ function removeTagAt(index: number) {
     <h4>Tags</h4>
     <TagField v-for="(tag, index) in value" :key="tag.id" :index="index" @remove="() => removeTagAt(index)" />
     <button type="button" @click="addTag">Add</button>
+
+    <!-- Displays the minLength error if the `tags` array is empty -->
+    <Errors path="tags" />
   </div>
 </template>
 ```
@@ -243,6 +254,21 @@ const shouldDisplayErrorIfAny = computed(() => isTouched.value || hasFormBeenSub
 </template>
 ```
 
+This component will retrieve the error at the path where the error is specified:
+
+```ts
+const formValuesSchema = z.object({
+  tags: z
+    .array(
+      z.object({
+        id: z.uuid(),
+        label: z.string().min(10), // <-- error is displayed via `<Errors path="tags.{index}.label" />
+      }),
+    )
+    .min(1), // <-- error is displayed via `<Errors path="tags" />`
+})
+```
+
 ## Limitations
 
 - A form can only be used once per page, no concurrent forms.
@@ -252,9 +278,24 @@ const shouldDisplayErrorIfAny = computed(() => isTouched.value || hasFormBeenSub
 
 ## Recommendations
 
+### Split fields in as many components as possible
+
+For re-usability _and_ readability, I recommend writing dedicated components for each field:
+
+- EmailField
+- PasswordField
+- TagsFields (array field)
+- TagLabelField
+- etc.
+
 ### Do not check validity, do something with errors instead
 
 The `useForm` composable (in `const [useForm] = createForm(…)`) does _not_ provide any `isValid` state because:
 
 1. You can check the existence of errors for validity – `errors.length === 0`
 2. `isValid` is usually used to block submission, which is a UI anti-pattern ; forms should allow submission and report errors either via field hints or another mechanism like modals or dialogs
+
+## References
+
+- `flemme-vue` [README](https://github.com/SacDeNoeuds/flemme/tree/main/modules/flemme-vue/README.md)
+- `flemme` [README](https://github.com/SacDeNoeuds/flemme/tree/main/modules/flemme/README.md)
