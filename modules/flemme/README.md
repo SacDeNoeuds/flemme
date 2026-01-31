@@ -383,7 +383,7 @@ interface On {
   <P extends Paths<T>>(event: 'focus' | 'blur', path: P, listener: (data: { path: P }) => unknown): () => void
   (event: 'focus' | 'blur', listener: (data: { path: Paths<T> }) => unknown): () => void
 
-  (event: 'validated', listener: (data: { errors: ValidationErrors | undefined }) => unknown): () => void
+  (event: 'validated', listener: (data: { errors: FormError<T>[] }) => unknown): () => void
 
   (event: 'submit', listener: (data: { values: T }) => unknown): () => void
   (event: 'submitted', listener: (data: { values: T; error?: unknown }) => unknown): () => void
@@ -392,7 +392,7 @@ interface On {
 
 #### `form.validate()`
 
-Populates form error with found errors or `undefined`
+Populates form error with found errors if any.
 
 Emits a `'validated'` event.
 
@@ -407,7 +407,7 @@ form.validate()
 
 ```ts
 type Errors<FormValues> = {
-  readonly errors: Array<{ message: string; path: Paths<FormValues> }> | undefined
+  readonly errors: ReadonlyArray<{ message: string; path: Paths<FormValues> }>
 }
 
 // Usage:
@@ -416,7 +416,7 @@ form.errors
 
 #### `form.isValid`
 
-Returns `true` when `form.errors` is `undefined`. Basically.
+Returns `true` when `form.errors` is empty. Basically.
 
 ```ts
 type IsValid = {
@@ -466,7 +466,7 @@ export type Form<T> = {
   // readers
   readonly initialValues: T
   readonly values: T
-  readonly errors: Array<{ message: string; path: Paths<T> }>
+  readonly errors: ReadonlyArray<{ message: string; path: Paths<T> }>
   readonly isValid: boolean
   readonly isDirty: boolean
   readonly isTouched: boolean

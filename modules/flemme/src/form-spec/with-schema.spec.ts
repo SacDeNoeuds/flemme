@@ -47,7 +47,7 @@ for (const schema of schemas) {
       expect(form.errors).toHaveLength(1)
       form.set('nested.0.of.0.item', 6)
       form.validate()
-      expect(form.errors).toBe(undefined)
+      expect(form.errors).toEqual([])
     })
   })
 }

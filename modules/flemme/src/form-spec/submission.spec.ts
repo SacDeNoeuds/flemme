@@ -35,7 +35,7 @@ describe('form reset', () => {
     expect(resetListener).toHaveBeenCalledOnce()
     expect(form.isDirty).toBe(false)
     expect(form.isValid).toBe(true)
-    expect(form.errors).toBe(undefined)
+    expect(form.errors).toEqual([])
   })
 
   it('emits submit events (successful submit)', async () => {

@@ -23,12 +23,12 @@ export type FormError<FormValues> = {
   message: string
   path: Path<FormValues>
 }
-export type FormErrors<FormValues> = ReadonlyArray<FormError<FormValues>> | undefined
+export type FormErrors<FormValues> = ReadonlyArray<FormError<FormValues>>
 export type Validate<FormValues> = (values: FormValues) => FormErrors<FormValues>
 
 export type SubmittedEventData<T, Parsed> =
   | { state: 'success'; values: T }
-  | { state: 'failure'; step: 'validation'; errors: NonNullable<FormErrors<T>>; values: T }
+  | { state: 'failure'; step: 'validation'; errors: FormErrors<T>; values: T }
   | { state: 'failure'; step: 'submission'; values: Parsed; error: unknown }
 
 export type Form<T, Parsed> = {
@@ -249,7 +249,7 @@ export function createForm<T, Parsed>(options: CreateFormOptions<T, Parsed>): Fo
   let submitting = false
 
   // validation
-  let errors: FormErrors<T> = undefined
+  let errors: FormErrors<T> = []
 
   // events
   const listeners: Record<FormEvent, Set<Listener>> = {
@@ -278,7 +278,7 @@ export function createForm<T, Parsed>(options: CreateFormOptions<T, Parsed>): Fo
       return errors
     },
     get isValid() {
-      return errors === undefined
+      return errors.length === 0
     },
     get isDirty() {
       return !isEqual(values, initialValue)
@@ -311,7 +311,7 @@ export function createForm<T, Parsed>(options: CreateFormOptions<T, Parsed>): Fo
       initialValue = clone(nextInitial)
       values = clone(nextInitial)
       touched.clear()
-      errors = undefined
+      errors = []
       emit('reset', { path: '', previous, next: initialValue })
     },
     resetAt: (...args: any[]) => {
@@ -363,7 +363,7 @@ export function createForm<T, Parsed>(options: CreateFormOptions<T, Parsed>): Fo
   const validate = () => {
     const result = schema['~standard'].validate(values)
     if (result instanceof Promise) throw new Error('async validation is not supported')
-    errors = result.issues?.map((issue) => ({
+    errors = (result.issues ?? []).map((issue) => ({
       message: issue.message,
       path: (issue.path?.map((segment) => (segment as any).key ?? segment).join('.') ?? '') as Path<T>,
     }))

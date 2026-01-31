@@ -20,7 +20,7 @@ describe('form reset', () => {
     expect(listener).toHaveBeenNthCalledWith(1, { path: '', previous: form.initialValues, next: form.initialValues })
     expect(form.isDirty).toBe(false)
     expect(form.isValid).toBe(true)
-    expect(form.errors).toBe(undefined)
+    expect(form.errors).toEqual([])
   })
 
   it.prop([formValuesArbitrary.filter((v) => v.products.length > 0)])('resets products only', (values) => {

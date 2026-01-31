@@ -10,7 +10,7 @@ describe('form reset', () => {
     expect(form.values).toEqual(values)
     expect(form.get('products.0.name')).toEqual(values.products[0]?.name)
     expect(form.isValid).toBe(true)
-    expect(form.errors).toBe(undefined)
+    expect(form.errors).toEqual([])
     expect(form.isDirty).toBe(false)
   })
 })
