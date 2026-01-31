@@ -4,9 +4,17 @@ import { describe, expect, vi } from 'vitest'
 import { createProductForm, formValuesArbitrary } from './utils'
 
 describe('form reset', () => {
-  it('throws when submitting invalid values', async () => {
+  it('emits "submitted" event with failure state when submitting invalid values', async () => {
     const form = createProductForm({ initialValues: { products: [] } })
-    await expect(form.submit).rejects.toThrow(Error)
+    const submittedListener = vi.fn()
+    form.on('submitted', submittedListener)
+    await form.submit()
+    expect(submittedListener).toHaveBeenNthCalledWith(1, {
+      state: 'failure',
+      step: 'validation',
+      values: form.values,
+      errors: form.errors,
+    })
   })
 
   it('throws when resetting while submitting', async () => {
@@ -60,7 +68,7 @@ describe('form reset', () => {
     expect(submittedListener).not.toHaveBeenCalled()
     resolve()
     await promise
-    expect(submittedListener).toHaveBeenNthCalledWith(1, { values })
+    expect(submittedListener).toHaveBeenNthCalledWith(1, { state: 'success', values })
   })
 
   it('emits submit events (failing submit)', async () => {
@@ -86,7 +94,7 @@ describe('form reset', () => {
     const error = new Error('something went wrong')
     reject(error)
     await promise
-    expect(submittedListener).toHaveBeenNthCalledWith(1, { values, error })
+    expect(submittedListener).toHaveBeenNthCalledWith(1, { state: 'failure', step: 'submission', values, error })
   })
 
   it('accepts field changes during submission', () => {

@@ -334,8 +334,7 @@ export function createForm<T, Parsed>(options: CreateFormOptions<T, Parsed>): Fo
 
     submit: async (): Promise<any> => {
       const parsed = validate()
-      if (form.errors) {
-        // throw new Error('invalid form data', { cause: form.errors })
+      if (form.errors.length > 0) {
         emit('submitted', { state: 'failure', step: 'validation', values: form.values, errors: form.errors })
         return
       }
