@@ -41,6 +41,22 @@ describe('form focus/blur', () => {
     expect(pathListener).toHaveBeenNthCalledWith(1, { path: 'products.0.name' })
   })
 
+  it('marks first product as touched when "focusing" products list', () => {
+    const form = createProductForm({ submit })
+    const formListener = vi.fn()
+    const productNameListener = vi.fn()
+    form.on('focus', formListener)
+    form.on('focus', 'products.0.name', productNameListener)
+    expect(formListener).not.toHaveBeenCalled()
+    expect(productNameListener).not.toHaveBeenCalled()
+
+    form.focus('products.0')
+    expect(form.isTouched).toBe(true)
+    expect(formListener).toHaveBeenNthCalledWith(1, { path: 'products.0' })
+    expect(productNameListener).toHaveBeenNthCalledWith(1, { path: 'products.0' })
+    expect(form.isTouchedAt('products.0.name')).toBe(true)
+  })
+
   // these are backed by real-life scenarios.
   // it('triggers "focus" event once when same item is focused twice', () => {
   //   const form = makeForm({ initial: { name: 'toto' }, submit: async () => {} })

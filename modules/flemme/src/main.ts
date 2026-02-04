@@ -5,9 +5,8 @@ export {
   type FormError,
   type FormErrors,
   type FormEvent,
-  type Validate,
-  type ValidationTriggerEvent,
   type Path,
   type PathValue,
+  type ValidationTriggerEvent,
 } from './form'
 export { addItem, removeItem } from './iterable'

@@ -310,7 +310,8 @@ export function createForm<T, Parsed>(options: CreateFormOptions<T, Parsed>): Fo
 
     isDirtyAt: (path: Path<T>) => !isEqual(get(values, path as never), get(initialValue, path as never)),
 
-    isTouchedAt: (path: Path<T>) => some(touched, (subpath) => subpath.startsWith(path as any)),
+    isTouchedAt: (path: Path<T>) =>
+      some(touched, (subpath) => subpath.startsWith(path as any) || path.startsWith(subpath)),
 
     isValidAt: (path: Path<T>) => !errors.some((error) => error.path.startsWith(path)),
 
@@ -415,12 +416,11 @@ export function createForm<T, Parsed>(options: CreateFormOptions<T, Parsed>): Fo
     listeners[event].add(listener)
     return () => listeners[event].delete(listener)
   }
-  const onField = (event: FormEvent, path: string, listener: Listener) => {
+  const onField = (event: FormEvent, fieldPath: string, listener: Listener) => {
     const proxy: Listener = (data: { path: string }) => {
-      if (!data.path || data.path.startsWith(path)) listener(data)
+      if (!data.path || fieldPath.startsWith(data.path) || data.path.startsWith(fieldPath)) listener(data)
     }
-    listeners[event].add(proxy)
-    return () => listeners[event].delete(proxy)
+    return onForm(event, proxy)
   }
 
   const restoreInteractionsWhileSubmitting = () => {
