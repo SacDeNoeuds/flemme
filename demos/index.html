@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Demos of flemme</title>
+    <link rel="stylesheet" href="./main.css" />
+  </head>
+
+  <body>
+    <nav>
+      <a class="toc-link" href="./flemme-vue/simple-registration-form/">Vue – Simple registration form</a>
+    </nav>
+    <style>
+      /* Table of contents link */
+      .toc-link {
+        background: rgba(79, 172, 254, 0.15);
+        border: 1px solid rgba(79, 172, 254, 0.3);
+        border-radius: 8px;
+        color: #4facfe;
+        padding: 12px 20px;
+        font-size: 16px;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 4px 15px rgba(79, 172, 254, 0.2);
+        backdrop-filter: blur(4px);
+      }
+
+      .toc-link:hover {
+        background: rgba(79, 172, 254, 0.25);
+        border-color: rgba(79, 172, 254, 0.5);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(79, 172, 254, 0.3);
+      }
+
+      .toc-link:active {
+        transform: translateY(0);
+      }
+
+      .toc-link::before {
+        content: '📋';
+        font-size: 18px;
+        transition: transform 0.3s ease;
+      }
+
+      .toc-link:hover::before {
+        transform: rotate(15deg);
+      }
+
+      /* Active state for when TOC is open */
+      .toc-link.active {
+        background: rgba(0, 242, 254, 0.2);
+        border-color: rgba(0, 242, 254, 0.4);
+        color: #00f2fe;
+        box-shadow: 0 0 15px rgba(0, 242, 254, 0.3);
+      }
+
+      .toc-link.active::before {
+        transform: rotate(45deg);
+      }
+    </style>
+  </body>
+</html>

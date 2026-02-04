@@ -1,6 +1,7 @@
 {
   "name": "flemme-modules",
   "workspaces": [
+    "demo/",
     "modules/*"
   ],
   "scripts": {

@@ -1,0 +1,17 @@
+<script setup lang="ts">
+import { sleep } from '../lib/sleep'
+import RegistrationForm from './RegistrationForm.vue'
+import { FormValues } from './useRegistrationForm'
+
+async function register(values: FormValues) {
+  await sleep(750)
+  console.info('submitted:', values)
+}
+</script>
+
+<template>
+  <div class="app">
+    <h2>Registration form</h2>
+    <RegistrationForm :submit="register" />
+  </div>
+</template>
