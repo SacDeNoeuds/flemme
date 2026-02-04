@@ -196,6 +196,7 @@ export type Form<T, Parsed> = {
      *
      * form.on('validated', 'name.first', ({ path }) => {})
      */
+    <P extends Path<T>>(event: 'validated', path: P, listener: () => unknown): () => void
     (event: 'validated', listener: () => unknown): () => void
 
     /**
@@ -237,6 +238,12 @@ export type Form<T, Parsed> = {
    * @fires validated
    */
   validate: () => void
+  /**
+   * Programmatically validates the form and set the errors if any
+   *
+   * @fires validated
+   */
+  validateAt: (path: Path<T>) => void
 }
 
 export type CreateFormOptions<T, Parsed> = {
@@ -326,7 +333,7 @@ export function createForm<T, Parsed>(options: CreateFormOptions<T, Parsed>): Fo
       touched.clear()
       errors = []
       emit('reset', { path: '', previous, next: initialValue })
-      validate()
+      validateAt('')
     },
     resetAt: (...args: any[]) => {
       const [path, fieldValue] = args
@@ -337,7 +344,7 @@ export function createForm<T, Parsed>(options: CreateFormOptions<T, Parsed>): Fo
 
       removeBy(touched, (value) => value.startsWith(path))
       emit('reset', { path, previous, next })
-      validate()
+      form.validateAt(path)
     },
 
     // listeners
@@ -348,7 +355,7 @@ export function createForm<T, Parsed>(options: CreateFormOptions<T, Parsed>): Fo
     ) => (args.length === 2 ? onForm(...args) : onField(...args)),
 
     submit: async (): Promise<any> => {
-      const parsed = validate()
+      const parsed = validateAt('')
       if (form.errors.length > 0) {
         emit('submitted', { state: 'failure', step: 'validation', values: form.values, errors: form.errors })
         return
@@ -370,18 +377,25 @@ export function createForm<T, Parsed>(options: CreateFormOptions<T, Parsed>): Fo
       }
     },
     validate: () => {
-      validate()
+      validateAt('')
+    },
+    validateAt: (path) => {
+      validateAt(path)
     },
   }
 
-  const validate = () => {
+  const validateAt = (path: Path<T>) => {
     const result = schema['~standard'].validate(values)
     if (result instanceof Promise) throw new Error('async validation is not supported')
-    errors = (result.issues ?? []).map((issue) => ({
-      message: issue.message,
-      path: (issue.path?.map((segment) => (segment as any).key ?? segment).join('.') ?? '') as Path<T>,
-    }))
-    emit('validated', {})
+    const issues = result.issues ?? []
+    errors = issues.flatMap((issue) => {
+      const error = {
+        message: issue.message,
+        path: (issue.path?.map((segment) => (segment as any).key ?? segment).join('.') ?? '') as Path<T>,
+      }
+      return error.path.startsWith(path) ? [error] : []
+    })
+    emit('validated', { path })
     return 'value' in result ? result.value : undefined
   }
 
@@ -421,7 +435,7 @@ export function createForm<T, Parsed>(options: CreateFormOptions<T, Parsed>): Fo
   })
 
   // validate form at init
-  validate()
+  validateAt('')
 
   return form
 }

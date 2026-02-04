@@ -13,7 +13,7 @@ export type FormValues = { products: Product[]; name?: string | undefined }
 export const submit = (_values: FormValues): Promise<void> => Promise.resolve()
 
 const productSchema = z.object({
-  name: z.string(),
+  name: z.string().min(1),
   price: z.number(),
   createdAt: z.coerce.date(),
   forSale: z.boolean(),
@@ -36,7 +36,7 @@ export const createProductForm = (options?: Partial<CreateFormOptions<FormValues
 
 export const productArbitrary = fc.record(
   {
-    name: fc.string(),
+    name: fc.string({ minLength: 1 }),
     price: fc.float({ noNaN: true }),
     createdAt: fc.date({ noInvalidDate: true }),
     forSale: fc.boolean(),
