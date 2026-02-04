@@ -1,19 +1,13 @@
 <script setup lang="ts">
-import { toRef } from 'vue'
 import { useRegistrationFormField } from '../useRegistrationForm'
 import Errors from './Errors.vue'
 
-type Props = {
-  path: 'password' | 'confirmation'
-  label: string
-}
-const props = defineProps<Props>()
-const { path, value, focus, blur } = useRegistrationFormField(toRef(props, 'path'))
+const { path, value, focus, blur } = useRegistrationFormField('account.password')
 </script>
 
 <template>
   <div class="form-field">
-    <label :for="path">{{ props.label }}</label>
+    <label :for="path">Password</label>
     <input v-model="value" type="password" :id="path" :name="path" @focus="focus" @blur="blur" />
     <Errors :path="path" />
   </div>
