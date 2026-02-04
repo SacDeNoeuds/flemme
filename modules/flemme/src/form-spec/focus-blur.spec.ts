@@ -1,16 +1,13 @@
 /* eslint-disable security/detect-object-injection */
 import { it } from '@fast-check/vitest'
 import { describe, expect, vi } from 'vitest'
-import { createForm } from '../form'
-import { formValuesArbitrary, submit } from './utils'
+import { createProductForm, formValuesArbitrary, submit } from './utils'
 
 describe('form focus/blur', () => {
-  const makeForm = createForm
-
   it.prop([formValuesArbitrary.filter(({ products }) => products.length > 0)])(
     'focuses first product name',
     (values) => {
-      const form = makeForm({ initialValues: { ...values, name: 'toto' }, submit })
+      const form = createProductForm({ initialValues: { ...values, name: 'toto' }, submit })
       const formListener = vi.fn()
       const pathListener = vi.fn()
       form.on('focus', formListener)
@@ -29,7 +26,7 @@ describe('form focus/blur', () => {
   )
 
   it.prop([formValuesArbitrary.filter(({ products }) => products.length > 0)])('blurs first product name', (values) => {
-    const form = makeForm({ initialValues: values, submit })
+    const form = createProductForm({ initialValues: values, submit })
     const formListener = vi.fn()
     const pathListener = vi.fn()
     form.on('blur', formListener)

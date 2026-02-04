@@ -28,7 +28,6 @@ describe('product form', () => {
       initialValues: { products: [] },
       validationTriggers: ['blur'],
     })
-    form.validate()
     expect(form.isValidAt('products')).toBe(false)
   })
 
@@ -46,7 +45,6 @@ describe('product form', () => {
       },
       validationTriggers: ['blur'],
     })
-    form.validate()
     expect(form.isValidAt('products.0.name')).toBe(true)
     expect(form.isValidAt('products.0.createdAt')).toBe(false)
     expect(form.isValidAt('products')).toBe(false)

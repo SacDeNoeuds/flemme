@@ -99,13 +99,19 @@ export type Form<T, Parsed> = {
   /**
    * resets the form to its initial values and marks every field as not-touched
    *
+   * runs validation
+   *
    * @fires reset
+   * @fires validated
    */
   reset: (nextInitialValue?: T) => void
   /**
    * resets the field to its initial values and marks the field as not-touched
    *
+   * runs validation
+   *
    * @fires reset
+   * @fires validated
    */
   resetAt: <P extends Path<T>>(path: P, nextInitialValue?: PathValue<T, P & string>) => void
 
@@ -320,6 +326,7 @@ export function createForm<T, Parsed>(options: CreateFormOptions<T, Parsed>): Fo
       touched.clear()
       errors = []
       emit('reset', { path: '', previous, next: initialValue })
+      validate()
     },
     resetAt: (...args: any[]) => {
       const [path, fieldValue] = args
@@ -330,6 +337,7 @@ export function createForm<T, Parsed>(options: CreateFormOptions<T, Parsed>): Fo
 
       removeBy(touched, (value) => value.startsWith(path))
       emit('reset', { path, previous, next })
+      validate()
     },
 
     // listeners
@@ -411,6 +419,9 @@ export function createForm<T, Parsed>(options: CreateFormOptions<T, Parsed>): Fo
   validationTriggers.forEach((event) => {
     form.on(event as any, () => form.validate())
   })
+
+  // validate form at init
+  validate()
 
   return form
 }

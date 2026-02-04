@@ -1,23 +1,28 @@
 /* eslint-disable security/detect-object-injection */
 import { it } from '@fast-check/vitest'
 import { describe, expect, vi } from 'vitest'
-import { createForm } from '../form'
 import { createProductForm, formValuesArbitrary } from './utils'
 
 describe('form reset', () => {
-  const makeForm = createForm
-
   it.prop([formValuesArbitrary])('resets form', (values) => {
     const form = createProductForm({ initialValues: values })
-    const listener = vi.fn()
-    form.on('reset', listener)
-    expect(listener).not.toHaveBeenCalled()
+    const resetListener = vi.fn()
+    const validatedListener = vi.fn()
+    form.on('reset', resetListener)
+    form.on('validated', validatedListener)
+    expect(resetListener).not.toHaveBeenCalled()
+    expect(validatedListener).not.toHaveBeenCalled()
 
     form.set('products', [])
     form.reset()
     expect(form.values).toEqual(values)
     expect(form.initialValues).toEqual(values)
-    expect(listener).toHaveBeenNthCalledWith(1, { path: '', previous: form.initialValues, next: form.initialValues })
+    expect(resetListener).toHaveBeenNthCalledWith(1, {
+      path: '',
+      previous: form.initialValues,
+      next: form.initialValues,
+    })
+    expect(validatedListener).toHaveBeenCalledOnce()
     expect(form.isDirty).toBe(false)
     expect(form.isValid).toBe(true)
     expect(form.errors).toEqual([])
@@ -27,10 +32,13 @@ describe('form reset', () => {
     const form = createProductForm({ initialValues: { ...values, name: 'toto' } })
     const nameResetListener = vi.fn()
     const productResetListener = vi.fn()
+    const validatedListener = vi.fn()
     form.on('reset', 'products', productResetListener)
     form.on('reset', 'name', nameResetListener)
+    form.on('validated', validatedListener)
     expect(productResetListener).not.toHaveBeenCalled()
     expect(nameResetListener).not.toHaveBeenCalled()
+    expect(validatedListener).not.toHaveBeenCalled()
 
     form.set('name', 'jack')
     form.set('products', [])
@@ -47,6 +55,7 @@ describe('form reset', () => {
       previous: form.initialValues.products,
       next: form.initialValues.products,
     })
+    expect(validatedListener).toHaveBeenCalledOnce()
   })
 
   it.prop([formValuesArbitrary.filter((v) => v.products.length > 0)])('resets products with value', (values) => {

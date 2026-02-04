@@ -1,14 +1,11 @@
 /* eslint-disable security/detect-object-injection */
 import { it } from '@fast-check/vitest'
 import { describe, expect, vi } from 'vitest'
-import { createForm } from '../form'
-import { formValuesArbitrary, Product, productArbitrary, submit } from './utils'
+import { createProductForm, formValuesArbitrary, Product, productArbitrary, submit } from './utils'
 
 describe('form changes', () => {
-  const makeForm = createForm
-
   it.prop([formValuesArbitrary, productArbitrary])('a whole array value', (values, product) => {
-    const form = makeForm({ initialValues: values, submit })
+    const form = createProductForm({ initialValues: values, submit })
     const listener = vi.fn()
     form.on('change', listener)
     expect(listener).not.toHaveBeenCalled()
@@ -19,7 +16,7 @@ describe('form changes', () => {
   })
 
   it.prop([formValuesArbitrary, productArbitrary])('an array’s first value', (values, product) => {
-    const form = makeForm({ initialValues: { ...values, name: 'toto' }, submit })
+    const form = createProductForm({ initialValues: { ...values, name: 'toto' }, submit })
     const listener = vi.fn()
     form.on('change', listener)
     expect(listener).not.toHaveBeenCalled()
@@ -32,7 +29,7 @@ describe('form changes', () => {
   })
 
   it.prop([formValuesArbitrary.filter(({ products }) => products.length > 0)])('a value with same value', (values) => {
-    const form = makeForm({ initialValues: values, submit })
+    const form = createProductForm({ initialValues: values, submit })
     const listener = vi.fn()
     form.on('change', listener)
     expect(listener).not.toHaveBeenCalled()
@@ -44,7 +41,7 @@ describe('form changes', () => {
   })
 
   it.prop([formValuesArbitrary.filter((v) => v.products.length > 0)])('changes the whole form value', (values) => {
-    const form = makeForm({
+    const form = createProductForm({
       initialValues: { products: [] as Product[] },
       submit,
     })
