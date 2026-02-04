@@ -37,7 +37,7 @@ export const createProductForm = (options?: Partial<CreateFormOptions<FormValues
 export const productArbitrary = fc.record(
   {
     name: fc.string(),
-    price: fc.float(),
+    price: fc.float({ noNaN: true }),
     createdAt: fc.date({ noInvalidDate: true }),
     forSale: fc.boolean(),
   },

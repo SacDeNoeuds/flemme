@@ -73,6 +73,13 @@ export type Form<T, Parsed> = {
   isTouchedAt: (path: Path<T>) => boolean
 
   /**
+   * A field is considered invalid when its value or one of its sub-values has an error
+   *
+   * Only a {@link Form.reset} or {@link Form.resetAt} can mark a field as non-touched again.
+   */
+  isValidAt: (path: Path<T>) => boolean
+
+  /**
    * Can be used to set the whole form value or a nested value by providing a path.
    *
    * @fires change
@@ -204,7 +211,6 @@ export type Form<T, Parsed> = {
     (event: 'submitted', listener: (data: SubmittedEventData<T, Parsed>) => unknown): () => void
   }
 
-  // form actions/operations:
   /**
    * Submit:
    * 1. Validates the form
@@ -292,6 +298,8 @@ export function createForm<T, Parsed>(options: CreateFormOptions<T, Parsed>): Fo
     isDirtyAt: (path: Path<T>) => !isEqual(get(values, path as never), get(initialValue, path as never)),
 
     isTouchedAt: (path: Path<T>) => some(touched, (subpath) => subpath.startsWith(path as any)),
+
+    isValidAt: (path: Path<T>) => !errors.some((error) => error.path.startsWith(path)),
 
     // actions/operations
     set: (...args: any[]) => (args.length === 1 ? changeForm(args[0]) : changeField(args[0], args[1])),

@@ -22,4 +22,33 @@ describe('product form', () => {
     form.blur('products')
     expect(form.isValid).toBe(false)
   })
+
+  it('considers a field as invalid when its value is invalid', () => {
+    const form = createProductForm({
+      initialValues: { products: [] },
+      validationTriggers: ['blur'],
+    })
+    form.validate()
+    expect(form.isValidAt('products')).toBe(false)
+  })
+
+  it('considers a field as invalid when a nested value is invalid', () => {
+    const form = createProductForm({
+      initialValues: {
+        products: [
+          {
+            name: '',
+            createdAt: new Date(NaN),
+            forSale: true,
+            price: 12,
+          },
+        ],
+      },
+      validationTriggers: ['blur'],
+    })
+    form.validate()
+    expect(form.isValidAt('products.0.name')).toBe(true)
+    expect(form.isValidAt('products.0.createdAt')).toBe(false)
+    expect(form.isValidAt('products')).toBe(false)
+  })
 })
